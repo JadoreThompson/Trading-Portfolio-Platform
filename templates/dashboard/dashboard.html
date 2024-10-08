@@ -1,0 +1,189 @@
+{% extends 'base_files/base.html'  %}
+
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<main class="py-4">
+    <div id="email">{{ email }}</div>
+    <div class="container-fluid">
+        <!--Create balance form-->
+        {% if no_balance %}
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Starting Balance</h4>
+                </div>
+                <div class="card-body">
+                    <form action="{% url 'create_balance' %}" method="post">
+                        {% csrf_token %}
+                        {{ balance_form }}
+                        <button type="submit" class="btn btn-primary mt-3">Submit</button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+
+        <!--Dashboard-->
+        <div class="row">
+            <!-- Portfolio Overview -->
+            <div class="col-md-8 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Portfolio Overview</h4>
+                        <button class="btn btn-outline-light btn-sm">Refresh</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Total Value: $100,000</h5>
+                                <h5>Daily P/L: <span class="text-success">+$1,500 (1.5%)</span></h5>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Risk Level: <span class="badge bg-warning">Moderate</span></h5>
+                                <h5>Sharpe Ratio: 1.2</h5>
+                            </div>
+                        </div>
+                        <div id="portfolio-chart" style="height: 300px;" class="mt-4">
+                            <!-- Placeholder for chart -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trade Entry Card -->
+            <div class="col-md-4 mb-4" id="trade_entry_container" style="display: none;">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Enter Trade</h4>
+                    </div>
+                    <div class="card-body">
+                        <form action="{% url 'create_order' %}" id="trade_entry_form" method="post">
+                            {% csrf_token %}
+<!--                            <div class="mb-3">-->
+<!--                                <label for="ticker" class="form-label">Ticker Symbol</label>-->
+<!--                                <input type="text" class="form-control" id="ticker" name="ticker" required>-->
+<!--                            </div>-->
+<!--                            <div class="mb-3">-->
+<!--                                <label for="monetary-amount" class="form-label">Monetary Amount ($)</label>-->
+<!--                                <input type="number" class="form-control" id="monetary-amount" name="monetary-amount" step="0.01" min="0" required>-->
+<!--                            </div>-->
+<!--                            <div class="mb-3">-->
+<!--                                <label for="unit-amount" class="form-label">Unit Amount</label>-->
+<!--                                <input type="number" class="form-control" id="unit-amount" name="unit-amount" step="1" min="0" required>-->
+<!--                            </div>-->
+<!--                            <div class="mb-3">-->
+<!--                                <label for="trade-type" class="form-label">Trade Type</label>-->
+<!--                                <select class="form-select" id="trade-type" name="trade-type" required>-->
+<!--                                    <option value="">Select trade type</option>-->
+<!--                                    <option value="buy">Buy</option>-->
+<!--                                    <option value="sell">Sell</option>-->
+<!--                                </select>-->
+<!--                            </div>-->
+                            {{ create_order_form }}
+                            <button type="submit" class="btn btn-primary w-100">Submit Trade</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!--Action Menu-->
+            <div class="col-md-4 mb-4" id="action_menu">
+                <div class="card h-100">
+                    <div class="card-header bg-info text-white">
+                        <h4 class="mb-0">Quick Actions</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" id="place_trade">Place Trade</button>
+                            <button class="btn btn-secondary">Adjust Risk Parameters</button>
+                            <button class="btn btn-info">Generate Report</button>
+                            <button class="btn btn-warning">Set Alerts</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Position Summary -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0">Position Summary</h4>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Quantity</th>
+                                    <th>Avg Price</th>
+                                    <th>Current Price</th>
+                                    <th>P/L</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>AAPL</td>
+                                    <td>100</td>
+                                    <td>$150.00</td>
+                                    <td>$155.00</td>
+                                    <td class="text-success">+$500 (3.33%)</td>
+                                </tr>
+                                <tr>
+                                    <td>MSFT</td>
+                                    <td>50</td>
+                                    <td>$300.00</td>
+                                    <td>$295.00</td>
+                                    <td class="text-danger">-$250 (-1.67%)</td>
+                                </tr>
+                                <!-- Add more rows as needed -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Risk Metrics -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-danger text-white">
+                        <h4 class="mb-0">Risk Metrics</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <h5>VaR (95%):</h5>
+                                <div class="progress">
+                                    <div class="progress-bar bg-danger" role="progressbar" style="width: 65%;" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100">$6,500</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <h5>Beta:</h5>
+                                <div class="progress">
+                                    <div class="progress-bar bg-info" role="progressbar" style="width: 110%;" aria-valuenow="110" aria-valuemin="0" aria-valuemax="200">1.1</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <h5>Volatility:</h5>
+                                <div class="progress">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 80%;" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100">18%</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <h5>Max Drawdown:</h5>
+                                <div class="progress">
+                                    <div class="progress-bar bg-danger" role="progressbar" style="width: 40%;" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100">-8%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block javascript %}
+    <script src="{% static 'js/dashboard/dashboard.js' %}"></script>
+{% endblock %}
