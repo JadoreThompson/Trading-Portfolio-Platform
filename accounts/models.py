@@ -1,5 +1,8 @@
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from uuid import uuid4
+
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
+from django.contrib.auth.models import BaseUserManager
 
 
 class CustomUserManager(BaseUserManager):
@@ -25,15 +28,16 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser):
-    email = models.EmailField(unique=True, primary_key=True, max_length=255)
-    username = models.CharField(unique=True, max_length=20)
-    password = models.CharField(max_length=255)
-    balance = models.FloatField(null=True, blank=True)
+    user_id = models.UUIDField(default=uuid4, editable=False, primary_key=True)
+    email = models.EmailField(unique=True)
+    password = models.CharField()
+    balance = models.FloatField(default=100000, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     objects = CustomUserManager()
+
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['email, password']
+    REQUIRED_FIELDS = ['password']
 
     def __str__(self):
-        return f"Username: {self.username}, Email: {self.email}"
+        return f"{self.email}"

@@ -1,27 +1,10 @@
-{% extends 'base_files/base.html' %}
-{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
 
-{% block stylesheet %}
-<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
-{% endblock %}
-
-{% block title %}Login{% endblock %}
-
-{% block content %}
-<main>
-    <div class="container">
-        <div class="card auth-card">
-            <div class="card-title">
-
-            </div>
-            <div class="card-body">
-                <form action="{% url 'login' %}" method="post">
-                    {% csrf_token %}
-                    {{ form }}
-                    <input type="submit" value="Submit">
-                </form>
-            </div>
-        </div>
-    </div>
-</main>
-{% endblock %}
+</body>
+</html>
