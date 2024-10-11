@@ -13,3 +13,63 @@
 .hover:hover {
     cursor: pointer;
 }
+
+/* Custom Alert */
+.custom-alert {
+    position: fixed;
+    top: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #d75d6a;
+    color: white;
+    padding: 1rem 2rem;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 0 0 5px 5px;
+    z-index: 1000;
+    width: 80%;
+    max-width: 400px;
+    text-align: center;
+    font-family: "Poppins", sans-serif;
+    animation-fill-mode: forwards;
+}
+.custom-alert.active {
+    display: block;
+    animation: slide-down 0.5s ease-out forwards;
+}
+.custom-alert.inactive {
+    animation: slide-up 0.5s ease-out forwards;
+}
+@keyframes slide-down {
+    from {
+        top: -100px;
+        opacity: 0;
+    }
+    to {
+        top: 0;
+        opacity: 1;
+    }
+}
+@keyframes slide-up {
+    from {
+        top: 0;
+        opacity: 1;
+    }
+    to {
+        top: -100px;
+        opacity: 0;
+    }
+}
+
+/*Statistic Card*/
+.stat-card {
+    border: 0px;
+    background-color: rgba(0, 0, 0, 0);
+}
+.stat-card .card-title span {
+    font-weight: 900;
+    color: rgba(0, 0, 0, 0.65);
+}
+.stat-card .card-body span {
+    font-weight: 850;
+    font-size: 1.5rem;
+}

@@ -13,4 +13,5 @@ class Orders(models.Model):
     open_price = models.FloatField(default=0.0, null=True, blank=True)
     close_price = models.FloatField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    closed_at = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField()

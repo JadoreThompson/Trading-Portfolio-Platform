@@ -7,6 +7,9 @@
     --sidebar-text: #fff;
     --sidebar-hover: #444;
 }
+* {
+      font-family: "Roboto", sans-serif;
+}
 html {
     scroll-behavior: smooth;
 }
@@ -14,6 +17,7 @@ body {
     color: var(--text-color);
     background-color: var(--background-color);
 }
+
 
 /* Login, Register */
 .auth-main {

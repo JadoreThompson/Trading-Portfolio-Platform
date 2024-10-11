@@ -35,11 +35,10 @@ class OrderConsumer(AsyncWebsocketConsumer):
 
         if data['action'] == 'open':
             await self.create_order(data)
-            print(type({'type': 'close_order_confirmation'}))
-            await self.send(json.dumps({'type': 'close_order_confirmation'}))
             print(comment.format(topic='SUCCESS', message='Successfully sent order creation confirmation'))
         if data['action'] == 'close':
             await self.close_user_position(data)
+            await self.send(json.dumps({'type': 'close_order_confirmation'}))
 
     async def create_order(self, data):
         def func(data):

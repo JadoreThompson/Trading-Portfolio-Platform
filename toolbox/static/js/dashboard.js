@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function(){
     const email = document.getElementById('email').textContent;
+    const alertBox = document.getElementById('custom-alert');
 
     const create_order_form = document.getElementById('create_order_form');
     const all_positions_table = document.getElementById('all_positions_table');
@@ -9,11 +10,12 @@ document.addEventListener('DOMContentLoaded', function(){
     // Socket
     const order_socket = new WebSocket('ws://' + window.location.host + `/ws/${email}/orders`);
 
-    order_socket.onmessage = function(e){
-        document.getElementById('placeholder').textContent = JSON.parse(e.data).amount;
+    order_socket.onmessage = async function(e){
         wsMsg = JSON.parse(e.data)
+//        document.getElementById('placeholder').textContent = wsMsg.amount;
+
         if (wsMsg.type === 'order_confirmation') { document.querySelector('.order-msg').textContent = wsMsg.message; }
-        console.log("Data: ", wsMsg);
+        if (wsMsg.type === 'close_order_confirmation') { await showAlert('Order Closed'); }
     }
 
     order_socket.onopen = function(e){
@@ -112,12 +114,13 @@ document.addEventListener('DOMContentLoaded', function(){
         showTable(all_positions_table);
     });
 
+
     // Portfolio Chart
     var chart = echarts.init(document.getElementById('portfolio-chart'));
     var option = {
-      title: {
-        text: 'Balance ' + document.getElementById('balance').textContent //'Portfolio Growth'
-      },
+//      title: {
+//        text: 'Balance ' + document.getElementById('balance').textContent //'Portfolio Growth'
+//      },
       tooltip: {
         trigger: 'axis',
         formatter: function (params) {
@@ -157,4 +160,28 @@ document.addEventListener('DOMContentLoaded', function(){
 
     // Set the options for the chart
     chart.setOption(option);
+
+
+    // Alert
+    async function showAlert(message) {
+        try {
+            const span = alertBox.querySelector("span");
+
+            alertBox.classList.add("active");
+            span.textContent = message;
+
+            await sleep(3000);
+
+            // Removing alert
+            alertBox.classList.remove("active");
+            span.textContent = "";
+
+        } catch(e) {
+            await showAlert(e.message);
+        }
+    }
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 });

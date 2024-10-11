@@ -1,10 +1,10 @@
 import json
-
-from django.http import JsonResponse
+from datetime import datetime, timedelta
 
 from .forms import CreateOrderForm
 from .models import Orders
 
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
@@ -12,11 +12,14 @@ from django.contrib.auth.decorators import login_required
 
 @login_required
 def dashboard(request):
+    open_positions = Orders.objects.filter(user=request.user, is_active=True)
+    closed_positions = Orders.objects.filter(user=request.user, is_active=False)
     return render(request, "dashboard/dashboard.html", {
         'create_order_form': CreateOrderForm(),
         'email': request.user.email,
         'balance': request.user.balance,
-        'open_positions': Orders.objects.filter(user=request.user, is_active=True)
+        'open_positions': open_positions,
+        'closed_positions': closed_positions
     })
 
 
