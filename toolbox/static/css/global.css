@@ -1,0 +1,21 @@
+:root {
+    --primary-color: #d4c19c;
+    --secondary-color: #8c7a5b;
+    --background-color: #faf9f7;
+    --text-color: #5c5245;
+    --sidebar-bg: #333;
+    --sidebar-text: #fff;
+    --sidebar-hover: #444;
+}
+html {
+    scroll-behavior: smooth;
+}
+body {
+    color: var(--text-color);
+    background-color: var(--background-color);
+}
+
+/* Login, Register */
+.auth-main {
+    height: 100vh;
+}

@@ -1,5 +1,6 @@
 from .forms import LoginForm, RegisterForm
 
+from django .db.utils import IntegrityError
 from django.contrib import messages
 from django.contrib.auth import get_user_model, authenticate, login
 from django.shortcuts import render, redirect
@@ -16,18 +17,20 @@ class LoginView(View):
 
     def post(self, request):
         try:
-            data = request.POST.dict()
-            del data['csrfmiddlewaretoken']
-
+            data = {k: v for k, v in request.POST.dict().items() if k != 'csrfmiddlewaretoken'}
             user = authenticate(email=data['email'], password=data['password'])
             if user:
-                login(request,user)
+                login(request, user)
                 messages.success(request, 'Logged in successfully')
                 return redirect('dashboard')
+
             messages.error(request, "Invalid credentials")
-            return render(request, 'accounts/login.html')
+            print("[LOGIN] >>> Invalid credentials")
+            return render(request, 'accounts/login.html', {'form': LoginForm()})
         except Exception as e:
-            print(f"[LOGIN][ERROR] -> {type(e)} - {str(e)}")
+            print(f"[LOGIN][ERROR] >>> {type(e)} - {str(e)}")
+            messages.error(request, f"Error: {str(e)}")
+            return render(request, 'accounts/login.html', {'form': RegisterForm()})
 
 
 class RegisterView(View):
@@ -37,9 +40,7 @@ class RegisterView(View):
 
     def post(self, request):
         try:
-            data = request.POST.dict()
-            del data['csrfmiddlewaretoken']
-
+            data = {k:v for k, v in request.POST.dict().items() if k != 'csrfmiddlewaretoken'}
             if User.objects.filter(email=data['email']):
                 messages.error(request, 'Account already exists')
 
@@ -47,5 +48,11 @@ class RegisterView(View):
             login(request, new_user)
             messages.success(request, 'User crested successfully')
             return redirect('dashboard')
+
+        except IntegrityError:
+            messages.error(request, "Account already exists")
+            return render(request, 'accounts/register.html', {'form': RegisterForm()})
         except Exception as e:
-            print(f"[REGISTER][ERROR] -> {type(e)} - {str(e)}")
+            print(f"[ERROR][REGISTER] >>> {type(e)} - {str(e)}")
+            messages.error(request, f"Error: {str(e)}")
+            return render(request, 'accounts/register.html', {'form': RegisterForm()})

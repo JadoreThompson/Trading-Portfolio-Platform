@@ -28,8 +28,7 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser):
-    user_id = models.UUIDField(default=uuid4, editable=False, primary_key=True)
-    email = models.EmailField(unique=True)
+    email = models.EmailField(unique=True, primary_key=True)
     password = models.CharField()
     balance = models.FloatField(default=100000, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

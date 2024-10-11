@@ -1,10 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends 'bases/base.html' %}
+{% load static %}
 
-</body>
-</html>
+{% block stylesheet %}{% endblock %}
+{% block title %}Login{% endblock %}
+
+
+{% block content %}
+<main class="auth-main">
+    <div class="container d-flex align-items-center justify-content-center">
+        <div class="card auth-card">
+            <div class="card-title">
+                <h1>Register</h1>
+            </div>
+            <div class="card-body">
+                <form action="{% url 'register' %}" method="post">
+                    {% csrf_token %}
+                    {{ form }}
+                    <input type="submit" value="Submit">
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block javascript %}
+{% endblock %}

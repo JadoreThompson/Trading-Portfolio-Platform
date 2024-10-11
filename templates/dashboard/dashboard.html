@@ -1,0 +1,204 @@
+{% extends 'bases/base.html' %}
+{% load static %}
+
+{% block stylesheet %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+{% endblock %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    .active-modal {
+        border-radius: 0.5rem 0.5rem 0 0;
+        border: 1px solid grey;
+        border-bottom: 1px solid white;
+    }
+
+    .active-table {
+        display: block;
+    }
+    .inactive-table {
+        display: none;
+    }
+</style>
+<div id="email">{{ email }}</div>
+<div id="placeholder"></div>
+<div id="balance" hidden>{{ balance }}</div>
+<main>
+    <div class="container">
+        <div class="btn btn-primary" id="create-order-btn">Create Order</div>
+    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-12 col-md-8">
+                <div id="portfolio-chart" style="width: 600px; height: 400px;"></div>
+            </div>
+        </div>
+
+        <!--Table Container -->
+        <div class="modal-section d-flex flex-row">
+            <button class="btn active-modal open">Open Positions</button>
+            <button class="btn all">All Positions</button>
+        </div>
+        <div class="container table-container row w-100 rounded border border-dark-subtle">
+            <div class="table-container">
+                <table id="open_positions_table" class="active-table">
+                    <thead class="border-bottom border-dark-subtle">
+                    <tr>
+                        <td>Ticker</td>
+                        <td>Open Price</td>
+                        <td>Unrealised P\L</td>
+                        <td><i class="fa-solid fa-bars"></i></td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- Placeholder open positions -->
+                    {% for p in open_positions %}
+                        <tr>
+                            <td>{{ p.ticker }}
+                                <span>{{ p.order_id }}</span>
+                            </td>
+                            <td>{{ p.open_price }}</td>
+                            <td id="upl">{{ p.unrealised_pnl }}</td>
+                            <td><i class="fa-solid fa-xmark close-open-order"></i></td>
+                        </tr>
+                    {% endfor %}
+<!--                    <tr>-->
+<!--                        <td>BTCUSD</td>-->
+<!--                        <td>$27,500</td>-->
+<!--                        <td>$500</td>-->
+<!--                    </tr>-->
+<!--                    <tr>-->
+<!--                        <td>ETHUSD</td>-->
+<!--                        <td>$1,600</td>-->
+<!--                        <td>$150</td>-->
+<!--                    </tr>-->
+<!--                    <tr>-->
+<!--                        <td>AAPL</td>-->
+<!--                        <td>$135</td>-->
+<!--                        <td>-$50</td>-->
+<!--                    </tr>-->
+                    </tbody>
+                </table>
+
+                <!-- Historical Trades Table -->
+                <table id="all_positions_table" class="inactive-table">
+                    <thead class="border-bottom border-dark-subtle">
+                    <tr>
+                        <td>Ticker</td>
+                        <td>Realised P\L</td>
+                        <td>Open Time</td>
+                        <td>Investment</td>
+                        <td>Open Price</td>
+                        <td>Close Price</td>
+                        <td>Status</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- Placeholder historical trades -->
+                    <tr>
+                        <td>BTCUSD</td>
+                        <td>$1,000</td>
+                        <td>2024-10-05 14:32</td>
+                        <td>$10,000</td>
+                        <td>$27,000</td>
+                        <td>$28,000</td>
+                        <td>Closed</td>
+                    </tr>
+                    <tr>
+                        <td>ETHUSD</td>
+                        <td>$200</td>
+                        <td>2024-10-04 09:15</td>
+                        <td>$2,000</td>
+                        <td>$1,500</td>
+                        <td>$1,700</td>
+                        <td>Closed</td>
+                    </tr>
+                    <tr>
+                        <td>TSLA</td>
+                        <td>-$300</td>
+                        <td>2024-09-30 11:42</td>
+                        <td>$5,000</td>
+                        <td>$250</td>
+                        <td>$245</td>
+                        <td>Closed</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!--Table of orders-->
+<!--        <div class="table-container">-->
+<!--            <table>-->
+<!--                <thead>-->
+<!--                <tr>-->
+<!--                    <td>Ticker</td>-->
+<!--                    <td>Open Price</td>-->
+<!--                    <td>Unrealised P\L</td>-->
+<!--                </tr>-->
+<!--                </thead>-->
+<!--                <tbody>-->
+<!--                &lt;!&ndash;Load open positions with JS&ndash;&gt;-->
+<!--                </tbody>-->
+<!--            </table>-->
+
+<!--            &lt;!&ndash;Historical Trades&ndash;&gt;-->
+<!--            <table>-->
+<!--                <thead>-->
+<!--                <tr>-->
+<!--                    <td>Ticker</td>-->
+<!--                    <td>Realised P\L</td>-->
+<!--                    <td>Open Time</td>-->
+<!--                    <td>Investment</td>-->
+<!--                    <td>Open Price</td>-->
+<!--                    <td>Close Price</td>-->
+<!--                    <td>Status</td>-->
+<!--                </tr>-->
+<!--                </thead>-->
+<!--                <tbody>-->
+<!--                {% for order in historical_orders %}-->
+<!--                    <tr>-->
+<!--                        <td>{{order.ticker}}</td>-->
+<!--                        <td>{{ order.realised_pnl }}</td>-->
+<!--                        <td>{{ order.dollar_amount}}</td>-->
+<!--                        <td>{{ order.open_time }}</td>-->
+<!--                        <td>{{ order.open_price }}</td>-->
+<!--                        <td>{{ order.close_price }}</td>-->
+<!--                        {%if not order.status %}-->
+<!--                            <td>Closed</td>-->
+<!--                        {% endif %}-->
+<!--                    </tr>-->
+<!--                {% endfor %}-->
+<!--                </tbody>-->
+<!--            </table>-->
+<!--        </div>-->
+    </div>
+<div id="order-container">
+    <div class="card order-card">
+        <div class="card-title">
+            <h2>New order</h2>
+            <i class="fa-solid fa-xmark hover" id="close-order"></i>
+        </div>
+        <div class="card-body">
+            <form action="{% url 'create_order' %}" method="post" id="order-form">
+                {% csrf_token %}
+                <div class="row">
+                    <input type="text" name="ticker" id="id_ticker" required>
+                    <div id="suggestions" class="suggestions" style="display: none;"></div>
+                </div>
+                <input type="number" name="dollar_amount" id="id_dollar_amount" required>
+                <input type="submit" value="Submit">
+                <span class="order-msg"></span>
+            </form>
+        </div>
+    </div>
+</div>
+</main>
+{% endblock %}
+
+{% block javascript %}
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}
