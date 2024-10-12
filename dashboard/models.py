@@ -3,11 +3,6 @@ from django.db import models
 from django.conf import settings
 
 
-# class BaseModel(models.Model):
-    # def __dict__(self):
-    #     return {key}
-
-
 class Orders(models.Model):
     order_id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

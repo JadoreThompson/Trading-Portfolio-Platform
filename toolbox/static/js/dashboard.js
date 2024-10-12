@@ -5,32 +5,88 @@ document.addEventListener('DOMContentLoaded', function(){
     const create_order_form = document.getElementById('create_order_form');
     const all_positions_table = document.getElementById('all_positions_table');
     const open_positions_table = document.getElementById('open_positions_table');
+    const summary_table = document.getElementById('summary_table');
 
 
+    // ----------------------------------------------
     // Socket
+    // ----------------------------------------------
     const order_socket = new WebSocket('ws://' + window.location.host + `/ws/${email}/orders`);
 
     order_socket.onmessage = async function(e){
-        const wsMsg = JSON.parse(e.data)
+        const wsMsg = JSON.parse(e.data);
         console.log(wsMsg);
         if (wsMsg?.type === 'insufficient_balance') { console.log(wsMsg.message); }
 
-        // Adding to the open positions table
         else if (wsMsg?.type === 'order_confirmation') {
             document.querySelector('.order-msg').textContent = wsMsg.message;
             await showAlert('Order Created');
         }
 
+        // Adding the new plced order to the open positions table
+        else if (wsMsg?.topic === 'order_created') {
+            const tbody = open_positions_table.querySelector('tbody');
+            const tr = document.createElement('tr');
+            const cols = ['ticker', 'open_price', 'unrealised_pnl'];
+
+            cols.forEach(col => {
+                const td = document.createElement('td');
+
+                if (col === 'ticker') {
+                    const span = document.createElement('span')
+                    span.textContent = wsMsg.order_id;
+                    span.style.visibility = 'hidden';
+                    td.appendChild(span);
+                }
+                if (col === 'unrealised_pnl'){
+                    td.id = 'upl';
+                    if (!wsMsg[col]) {
+                        td.textContent = 0.0;
+                    }
+                } else {
+                    td.textContent = wsMsg[col];
+                }
+                tr.appendChild(td);
+            });
+
+            // Adding the close button
+            let close = document.createElement('td');
+            let i = document.createElement('i');
+            i.classList.add('fa-solid', 'fa-xmark', 'close-open-order');
+            close.appendChild(i);
+            tr.appendChild(close);
+
+            tbody.appendChild(tr);
+
+            document.getElementById('close-order').click();
+        }
+
         // Shifting the closed position from open positions table to all positions table
-        else if (wsMsg?.type === 'closed') {
+        else if (wsMsg?.topic === 'closed') {
+            // Deleting from the open side
+            let span = Array.from(document.querySelectorAll('span')).find(span => span.textContent.trim() === wsMsg.order_id);
+            tr = span.closest('tr');
+            tr.remove();
+
+            // Adding to all positions table
             await showAlert(wsMsg.reason);
-            // shift to other table
+            const tbody = all_positions_table.querySelector('tbody');
+            tr = document.createElement('tr');
+
+            const cols = ['ticker', 'realised_pnl', 'created_at', 'dollar_amount', 'open_price', 'close_price'];
+            cols.forEach(col => {
+                console.log(wsMsg[col]);
+                const td = document.createElement('td');
+                td.textContent = wsMsg[col];
+                tr.appendChild(td);
+            });
+            tbody.appendChild(tr);
         }
 
         // Increasing the Unrealised Pnl Live
         else if (wsMsg?.topic === 'position_update') {
             let span = Array.from(document.querySelectorAll('span')).find(span => span.textContent.trim() === wsMsg.order_id);
-            const tr = span.closest('tr');
+            const tr = span?.closest('tr');
             tr.querySelector('#upl').textContent = wsMsg.amount.toFixed(2);
         }
     };
@@ -40,7 +96,9 @@ document.addEventListener('DOMContentLoaded', function(){
     }
 
 
+    // ----------------------------------------------
     // Order Relating
+    // ----------------------------------------------
 
     // Order Card
     document.getElementById('close-order').addEventListener('click', function(){
@@ -94,8 +152,9 @@ document.addEventListener('DOMContentLoaded', function(){
         });
     });
 
-
-    // Table
+    // ----------------------------------------------
+    // Tables
+    // ----------------------------------------------
     document.querySelectorAll('.modal-section button').forEach(button => {
         button.addEventListener('click', function() {
             if (!button.classList.contains('active-modal')) {
@@ -122,6 +181,7 @@ document.addEventListener('DOMContentLoaded', function(){
         }
     }
 
+    // Modal Activators
     document.querySelector('.open').addEventListener('click', function(){
         showTable(open_positions_table);
     });
@@ -130,8 +190,14 @@ document.addEventListener('DOMContentLoaded', function(){
         showTable(all_positions_table);
     });
 
+    document.querySelector('.summaries').addEventListener('click', function(){
+        showTable(summary_table);
+    });
 
+
+    // ----------------------------------------------
     // Portfolio Chart
+    // ----------------------------------------------
     var chart = echarts.init(document.getElementById('portfolio-chart'));
     var option = {
 //      title: {
@@ -173,12 +239,13 @@ document.addEventListener('DOMContentLoaded', function(){
         containLabel: true
       }
     };
-
     // Set the options for the chart
     chart.setOption(option);
 
 
+    // ----------------------------------------------
     // Alert
+    // ----------------------------------------------
     async function showAlert(message) {
         try {
             const span = alertBox.querySelector("span");

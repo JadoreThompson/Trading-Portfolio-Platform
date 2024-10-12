@@ -1,4 +1,5 @@
 import asyncio
+import json
 import uuid
 
 import ccxt
@@ -25,7 +26,7 @@ async def retrieve_order():
 
     def func():
         orders = Orders.objects.filter(is_active=True)
-        return orders
+        return list(set(orders))
 
     return await sync_to_async(func)()
 
@@ -39,7 +40,7 @@ async def save_unrealised_pl(order: Orders, new_equity: int | float):
     """
 
     def func():
-        order.unrealised_pnl =  new_equity
+        order.unrealised_pnl = new_equity
         order.save()
 
     await sync_to_async(func)()
@@ -64,7 +65,7 @@ async def close(order, close_price, amount):
             order.is_active = not order.is_active
             order.close_price = close_price
             order.closed_at = datetime.now()
-            order.realised_pnl = float("{:.2f}".format(-1 * (order.dollar_amount - amount)))
+            order.realised_pnl = order.dollar_amount - (order.dollar_amount - amount)
             order.unrealised_pnl = 0.0
             print(f"[CLOSE][EVENT] >>> Closing Order: {order.order_id}")
             order.save()
@@ -106,22 +107,19 @@ async def start_order_updater():
 
     This function should run in the background.
     """
-    async def func(order):
-        price = fetch_price(order)
-        if isinstance(price, int | float):
-            await process_order(price, order)
+    # async def func(order):
+    #     price = fetch_price(order)
+    #     if isinstance(price, int | float):
+    #         await process_order(price, order)
 
     while True:
         active_orders = await retrieve_order()
-        tasks = []
-        async for order in active_orders:
-            tasks.append(asyncio.create_task(func(order)))
-        await asyncio.gather(*tasks)
-
-        # async for order in active_orders:
-        #     price = fetch_price(order)
-        #     if isinstance(price, int | float):
-        #         await process_order(price, order)
+        for order in active_orders:
+            price = fetch_price(order)
+            if isinstance(price, int | float):
+                await process_order(price, order)
+            else:
+                continue
 
 
 async def process_order(current_ticker_price, order: Orders):
@@ -150,17 +148,22 @@ async def close_position(order: Orders, close_price: int | float, amount, reason
     :param amount: The realized PnL.
     :param reason: The reason for closing (e.g., liquidation), defaults to 'liquidated'.
     """
-    await close(order, close_price, amount)
-
     def func():
-        message = {'type': 'closed','reason': reason,'ticker': order.ticker,'amount': amount,'close_price': close_price}
+        message = {
+            'topic': 'closed',
+            'reason': reason,
+            'ticker': order.ticker,
+            'amount': amount,
+           'close_price': close_price
+        }
         message.update(vars(order))
-        for k, v in message.items():
-            if isinstance(v, uuid.UUID) or isinstance(v, datetime):
-                message[k] = str(v)
-            if k == '_state':
-                message.pop(k, None)
+
+        for k, v in list(message.items()):
+            if isinstance(v, (uuid.UUID, datetime)): message[k] = str(v)
+            if k == '_state': del message[k]
         return message
+
+    await close(order, close_price, amount)
 
     message = await sync_to_async(func)()
     channel_layer = get_channel_layer()
@@ -181,7 +184,7 @@ async def send_position_update(order, current_price: int | float, amount):
     :param current_price: The latest price for the ticker.
     :param amount: The updated amount (equity) of the position.
     """
-    print(f"[SEND POSITION UPDATE] >> Amount: {amount}")
+    print(f"[SEND POSITION UPDATE] >> Order: {order.order_id}")
     channel_layer = get_channel_layer()
     await channel_layer.group_send(
         f"orders-{order.user_id.split('@')[0]}",

@@ -81,6 +81,7 @@
         <div class="modal-section d-flex flex-row">
             <button class="btn active-modal open">Open Positions</button>
             <button class="btn all">All Positions</button>
+            <button class="btn summaries">Summaries</button>
         </div>
         <div class="container table-container row w-100 rounded border border-dark-subtle">
             <div class="table-container">
@@ -118,24 +119,47 @@
                         <td>Investment</td>
                         <td>Open Price</td>
                         <td>Close Price</td>
-                        <td>Status</td>
                     </tr>
                     </thead>
                     <tbody>
-                    <!-- Placeholder historical trades -->
                     {% for order in closed_positions %}
                     <tr>
                         <td>{{order.ticker}}</td>
                         <td>{{ order.realised_pnl }}</td>
                         <td>{{ order.dollar_amount}}</td>
-                        <td>{{ order.open_time }}</td>
+                        <td>{{ order.created_at }}</td>
                         <td>{{ order.open_price }}</td>
                         <td>{{ order.close_price }}</td>
-                        <td>{% if not order.is_active %}Closed{% endif %}</td>
                     </tr>
                     {% endfor %}
                     </tbody>
                 </table>
+                <div class="inactive-table" id="summary_table">
+                    <div class="col-12 col-md-3">
+                        <div class="card summary-card">
+                            <div class="card-title"></div>
+                            <div class="card-body"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="card summary-card">
+                            <div class="card-title"></div>
+                            <div class="card-body"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="card summary-card">
+                            <div class="card-title"></div>
+                            <div class="card-body"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="card summary-card">
+                            <div class="card-title"></div>
+                            <div class="card-body"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

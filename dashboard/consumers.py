@@ -83,8 +83,9 @@ class OrderConsumer(AsyncWebsocketConsumer):
         def func(data):
             # Remove CSRF token and fetch current price for the ticker.
             data.pop('csrfmiddlewaretoken', None)
-            data['open_price'] = redis_client.get(data['ticker']) if redis_client.get(data['ticker']) else fetch_price(tick=data['ticker'])
+            data['open_price'] = float(redis_client.get(data['ticker']).decode()) if float(redis_client.get(data['ticker']).decode()) else fetch_price(tick=data['ticker'])
             data['is_active'] = True
+
             return Orders.objects.create(**{key: value for key, value in data.items() if key != 'action'})
 
         def func2(data):
@@ -100,11 +101,10 @@ class OrderConsumer(AsyncWebsocketConsumer):
             order = await sync_to_async(func)(data)
             order_dict = {key: value for key, value in vars(order).items() if key != '_state'}
             for k, v in order_dict.items():
-                if isinstance(v, uuid.UUID): order_dict[k] = str(v)
-                if isinstance(v, datetime): order_dict[k] = str(v)
-                if isinstance(v, bytes): order_dict[k] = str(v)
+                if isinstance(v, (uuid.UUID, datetime, bytes)):
+                    order_dict[k] = str(v)
 
-            json_dict = {'type': 'order_created'}
+            json_dict = {'topic': 'order_created'}
             json_dict.update(order_dict)
             await self.send(json.dumps(json_dict))
             return None
