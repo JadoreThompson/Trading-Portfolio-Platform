@@ -14,12 +14,19 @@ from django.contrib.auth.decorators import login_required
 def dashboard(request):
     open_positions = Orders.objects.filter(user=request.user, is_active=True)
     closed_positions = Orders.objects.filter(user=request.user, is_active=False)
+
+    td = datetime.now()
+    yd = datetime.now() - timedelta(days=1)
+
     return render(request, "dashboard/dashboard.html", {
         'create_order_form': CreateOrderForm(),
         'email': request.user.email,
-        'balance': request.user.balance,
+        'balance': float("{:.2f}".format(request.user.balance)),
         'open_positions': open_positions,
-        'closed_positions': closed_positions
+        'closed_positions': closed_positions,
+        'day_change':  sum(
+            order.realised_pnl for order in closed_positions if order.closed_at.year == td.year and order.closed_at.month == td.month and order.closed_at.day == td.day
+        ) - sum(order.realised_pnl for order in closed_positions if order.closed_at.year == yd.year and order.closed_at.month == yd.month and order.closed_at.day == yd.day)
     })
 
 
@@ -47,4 +54,3 @@ def get_tickers(request):
         similars = [item for item in tickers if item.startswith(q)]
         return JsonResponse(status=200, data=similars, safe=False)
     return JsonResponse(status=400, data={'error': 'Invalid request'})
-

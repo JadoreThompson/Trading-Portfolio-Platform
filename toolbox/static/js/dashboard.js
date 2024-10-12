@@ -11,12 +11,29 @@ document.addEventListener('DOMContentLoaded', function(){
     const order_socket = new WebSocket('ws://' + window.location.host + `/ws/${email}/orders`);
 
     order_socket.onmessage = async function(e){
-        wsMsg = JSON.parse(e.data)
-//        document.getElementById('placeholder').textContent = wsMsg.amount;
+        const wsMsg = JSON.parse(e.data)
+        console.log(wsMsg);
+        if (wsMsg?.type === 'insufficient_balance') { console.log(wsMsg.message); }
 
-        if (wsMsg.type === 'order_confirmation') { document.querySelector('.order-msg').textContent = wsMsg.message; }
-        if (wsMsg.type === 'close_order_confirmation') { await showAlert('Order Closed'); }
-    }
+        // Adding to the open positions table
+        else if (wsMsg?.type === 'order_confirmation') {
+            document.querySelector('.order-msg').textContent = wsMsg.message;
+            await showAlert('Order Created');
+        }
+
+        // Shifting the closed position from open positions table to all positions table
+        else if (wsMsg?.type === 'closed') {
+            await showAlert(wsMsg.reason);
+            // shift to other table
+        }
+
+        // Increasing the Unrealised Pnl Live
+        else if (wsMsg?.topic === 'position_update') {
+            let span = Array.from(document.querySelectorAll('span')).find(span => span.textContent.trim() === wsMsg.order_id);
+            const tr = span.closest('tr');
+            tr.querySelector('#upl').textContent = wsMsg.amount.toFixed(2);
+        }
+    };
 
     order_socket.onopen = function(e){
         console.log('Connection open');
@@ -24,18 +41,18 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
     // Order Relating
+
+    // Order Card
     document.getElementById('close-order').addEventListener('click', function(){
         document.getElementById('order-container').style.display = 'none';
     });
     document.getElementById('create-order-btn').addEventListener('click', function(){
-        console.log('clicked');
         document.getElementById('order-container').style.display = 'flex';
     });
 
     document.getElementById('id_ticker').addEventListener('input', function(e){
         const inputValue = e.target.value.trim()
         if (inputValue.trim()) {
-            console.log(`${window.location.host}/dashboard/tickers/?q=${inputValue}`);
             fetch(`/dashboard/tickers/?q=${inputValue}`)
             .then(response => response.json())
             .then(data => {
@@ -44,7 +61,6 @@ document.addEventListener('DOMContentLoaded', function(){
                 if (data.length > 0) {
                     suggestionsDiv.style.display = 'flex';
                     data.forEach(item => {
-                        console.log(item);
                         const div = document.createElement('div');
                         div.classList.add("hover", "suggestion");
                         div.textContent = item;

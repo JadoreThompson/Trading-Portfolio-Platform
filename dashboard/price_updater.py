@@ -1,3 +1,6 @@
+import asyncio
+import uuid
+
 import ccxt
 import redis
 from datetime import datetime
@@ -36,7 +39,7 @@ async def save_unrealised_pl(order: Orders, new_equity: int | float):
     """
 
     def func():
-        order.unrealised_pnl = float("{:.2f}".format(new_equity))
+        order.unrealised_pnl =  new_equity
         order.save()
 
     await sync_to_async(func)()
@@ -55,18 +58,19 @@ async def close(order, close_price, amount):
     def func(order, close_price: int | float, amount: int | float):
         if order.is_active and not order.closed_at:
             user = Users.objects.get(email=order.user_id)
-            user.balance += amount
+            user.balance -= order.dollar_amount - amount
             user.save()
 
-            order.is_active = not order.is_active if order.is_active else False
+            order.is_active = not order.is_active
             order.close_price = close_price
             order.closed_at = datetime.now()
-            order.realised_pnl = amount
+            order.realised_pnl = float("{:.2f}".format(-1 * (order.dollar_amount - amount)))
             order.unrealised_pnl = 0.0
-            print(f"[CLOSE][EVENT] >>> Closing Order: {order.is_active}")
+            print(f"[CLOSE][EVENT] >>> Closing Order: {order.order_id}")
             order.save()
 
     await sync_to_async(func)(order, close_price, amount)
+    return None
 
 
 def fetch_price(order=None, tick=None):
@@ -102,12 +106,22 @@ async def start_order_updater():
 
     This function should run in the background.
     """
+    async def func(order):
+        price = fetch_price(order)
+        if isinstance(price, int | float):
+            await process_order(price, order)
+
     while True:
         active_orders = await retrieve_order()
+        tasks = []
         async for order in active_orders:
-            price = fetch_price(order)
-            if isinstance(price, int | float):
-                await process_order(price, order)
+            tasks.append(asyncio.create_task(func(order)))
+        await asyncio.gather(*tasks)
+
+        # async for order in active_orders:
+        #     price = fetch_price(order)
+        #     if isinstance(price, int | float):
+        #         await process_order(price, order)
 
 
 async def process_order(current_ticker_price, order: Orders):
@@ -119,7 +133,7 @@ async def process_order(current_ticker_price, order: Orders):
     :param order: The order instance being processed.
     """
     price_change = (current_ticker_price - order.open_price) / order.open_price
-    new_equity = order.dollar_amount * (1 + price_change)
+    new_equity = order.dollar_amount - (order.dollar_amount * (1 + price_change))
     if new_equity == -1 * order.dollar_amount:
         await close_position(order, current_ticker_price, new_equity)
     else:
@@ -127,7 +141,7 @@ async def process_order(current_ticker_price, order: Orders):
         await send_position_update(order, current_ticker_price, new_equity)
 
 
-async def close_position(order: Orders, close_price: int | float, amount, reason=None):
+async def close_position(order: Orders, close_price: int | float, amount, reason='liquidated'):
     """
     Closes an order and sends a message via WebSocket to notify the client.
 
@@ -138,17 +152,23 @@ async def close_position(order: Orders, close_price: int | float, amount, reason
     """
     await close(order, close_price, amount)
 
+    def func():
+        message = {'type': 'closed','reason': reason,'ticker': order.ticker,'amount': amount,'close_price': close_price}
+        message.update(vars(order))
+        for k, v in message.items():
+            if isinstance(v, uuid.UUID) or isinstance(v, datetime):
+                message[k] = str(v)
+            if k == '_state':
+                message.pop(k, None)
+        return message
+
+    message = await sync_to_async(func)()
     channel_layer = get_channel_layer()
     await channel_layer.group_send(
         f"orders-{order.user_id.split('@')[0]}",
         {
             'type': 'position_closed',
-            'message': {
-                'reason': reason if reason else 'liquidated',
-                'ticker': order.ticker,
-                'amount': amount,
-                'close_price': close_price
-            }
+            'message': message
         }
     )
 
@@ -161,12 +181,14 @@ async def send_position_update(order, current_price: int | float, amount):
     :param current_price: The latest price for the ticker.
     :param amount: The updated amount (equity) of the position.
     """
+    print(f"[SEND POSITION UPDATE] >> Amount: {amount}")
     channel_layer = get_channel_layer()
     await channel_layer.group_send(
         f"orders-{order.user_id.split('@')[0]}",
         {
             'type': 'position_update',
             'message': {
+                'topic': 'position_update',
                 'ticker': order.ticker,
                 'current_price': current_price,
                 'amount': amount,
