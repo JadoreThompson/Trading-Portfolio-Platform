@@ -39,4 +39,4 @@ class CustomUser(AbstractBaseUser):
     REQUIRED_FIELDS = ['password']
 
     def __str__(self):
-        return f"{self.email}"
+        return f"Email: {self.email} Balance:{self.balance}"

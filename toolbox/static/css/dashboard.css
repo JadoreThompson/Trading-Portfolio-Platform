@@ -76,13 +76,14 @@
 
 
 /*Table*/
-#summary_table,
-#summary_table .row,
-.summary-card {
+#summary_table .row {
     height: 100%;
 }
 .table-container {
-    height: 25rem;
+    max-height: 25rem;
+}
+#summary_table {
+    max-height: 25rem;
 }
 .summary-card .card-title {
     padding: 0.5rem;
@@ -90,6 +91,10 @@
 .summary-card .card-title span {
     font-weight: 850;
     font-size: 1.25rem;
+}
+.summary-item {
+    display: flex;
+    justify-content: space-between;
 }
 .chart-container {
     height: 200px;

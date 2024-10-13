@@ -33,16 +33,17 @@ document.addEventListener('DOMContentLoaded', function(){
                 const td = document.createElement('td');
 
                 if (col === 'ticker') {
+                    td.textContent = wsMsg[col];
                     const span = document.createElement('span')
                     span.textContent = wsMsg.order_id;
-                    span.style.visibility = 'hidden';
+                    span.style.display = 'none';
+                    console.log(span);
                     td.appendChild(span);
+                    console.log(td);
                 }
-                if (col === 'unrealised_pnl'){
-                    td.id = 'upl';
-                    if (!wsMsg[col]) {
-                        td.textContent = 0.0;
-                    }
+                else if (col === 'unrealised_pnl') {
+                    td.classList.add('upl');
+                    td.textContent = wsMsg[col] ? wsMsg[col].toFixed(2) : 0.00;
                 } else {
                     td.textContent = wsMsg[col];
                 }
@@ -87,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function(){
         else if (wsMsg?.topic === 'position_update') {
             let span = Array.from(document.querySelectorAll('span')).find(span => span.textContent.trim() === wsMsg.order_id);
             const tr = span?.closest('tr');
-            tr.querySelector('#upl').textContent = wsMsg.amount.toFixed(2);
+            tr.querySelector('.upl').textContent = wsMsg.amount.toFixed(2);
         }
     };
 
@@ -147,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function(){
     document.querySelectorAll('.close-open-order').forEach(position => {
         position.addEventListener('click', function(){
             const order_id = this.closest('tr').querySelector('span').textContent;
-            const amount = this.closest('tr').querySelector('#upl').textContent;
+            const amount = this.closest('tr').querySelector('.upl').textContent;
             order_socket.send(JSON.stringify({action: 'close', order_id: order_id, dollar_amount: amount}));
         });
     });
@@ -240,57 +241,6 @@ document.addEventListener('DOMContentLoaded', function(){
       }
     };
     pfChart.setOption(option);
-//
-//    // Asset Allocation Chart
-//    // Assuming you have asset allocation data
-//    const assetAllocationData = [
-//        { value: 35, name: 'Stocks' },
-//        { value: 30, name: 'Bonds' },
-//        { value: 20, name: 'Real Estate' },
-//        { value: 15, name: 'Cash' }
-//    ];
-//
-//    // Initialize the ECharts instance
-//    const chart = echarts.init(document.getElementById('aa-chart'));
-//
-//    // Chart configuration
-//    const aaOption = {
-//        title: {
-//            text: 'Asset Allocation',
-//            left: 'center'
-//        },
-//        tooltip: {
-//            trigger: 'item',
-//            formatter: '{a} <br/>{b}: {c} ({d}%)'
-//        },
-//        legend: {
-//            orient: 'vertical',
-//            left: 'left'
-//        },
-//        series: [
-//            {
-//                name: 'Asset Allocation',
-//                type: 'pie',
-//                radius: '50%',
-//                data: assetAllocationData,
-//                emphasis: {
-//                    itemStyle: {
-//                        shadowBlur: 10,
-//                        shadowOffsetX: 0,
-//                        shadowColor: 'rgba(0, 0, 0, 0.5)'
-//                    }
-//                }
-//            }
-//        ]
-//    };
-//
-//    // Set the chart option and render
-//    chart.setOption(aaOption);
-//
-//    // Optional: Make the chart responsive
-//    window.addEventListener('resize', function() {
-//        chart.resize();
-//    });
 
 
     // ----------------------------------------------
