@@ -22,6 +22,15 @@
     .inactive-table {
         display: none;
     }
+    .dot {
+      display: inline-block;
+      width: 8px;   /* Adjust the size of the dot */
+      height: 8px;  /* Adjust the size of the dot */
+      border-radius: 70%;  /* Makes it a circle */
+      background-color: #000;  /* Default color, you can override with `bg-*` classes */
+      margin-right: 5px;  /* Adds space between the dot and the text */
+    }
+
 </style>
 
 <div id="custom-alert" class="custom-alert">
@@ -31,9 +40,12 @@
 
 <header style="border-bottom: 1px solid black;">
     <div id="email" class="btn">{{ email }}</div>
+    <span class="dot bg-primary"></span>
 </header>
 
+<!--===============================-->
 <!--Main Content-->
+<!--===============================-->
 <main>
     <!--Summaries-->
     <div class="container">
@@ -60,6 +72,9 @@
         </div>
     </div>
 
+    <!--===============================-->
+    <!--Portfolio Growth-->
+    <!--===============================-->
     <div class="container">
         <div class="btn btn-primary" id="create-order-btn">Create Order</div>
     </div>
@@ -77,13 +92,15 @@
             </div>
         </div>
 
+        <!--===============================-->
         <!--Table Container -->
+        <!--===============================-->
         <div class="modal-section d-flex flex-row">
             <button class="btn active-modal open">Open Positions</button>
             <button class="btn all">All Positions</button>
             <button class="btn summaries">Summaries</button>
         </div>
-        <div class="container table-container row w-100 rounded border border-dark-subtle">
+        <div class="container table-container row w-100 rounded border border-dark-subtle mb-5">
             <div class="table-container">
                 <table id="open_positions_table" class="active-table">
                     <thead class="border-bottom border-dark-subtle">
@@ -134,35 +151,102 @@
                     {% endfor %}
                     </tbody>
                 </table>
-                <div class="inactive-table" id="summary_table">
-                    <div class="col-12 col-md-3">
-                        <div class="card summary-card">
-                            <div class="card-title"></div>
-                            <div class="card-body"></div>
+
+                <!--Summary Card-->
+<!--                <div class="inactive-table p-3" id="summary_table">-->
+<!--                    <div class="row d-flex flex-row">-->
+<!--                        <div class="col-12 col-md-3">-->
+<!--                            <div class="card summary-card">-->
+<!--                                <div class="card-title"><span>Asset Allocation</span></div>-->
+<!--                                <div class="card-body">-->
+<!--                                    <div id="aa-chart" class="chart-container"></div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                        <div class="col-12 col-md-3">-->
+<!--                            <div class="card summary-card">-->
+<!--                                <div class="card-title"><span>Diversity Index</span></div>-->
+<!--                                <div class="card-body"></div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                        <div class="col-12 col-md-3">-->
+<!--                            <div class="card summary-card">-->
+<!--                                <div class="card-title"><span>Win Rate Days</span></div>-->
+<!--                                <div class="card-body">-->
+<!--                                    bar chart (horizontal)-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                        <div class="col-12 col-md-3">-->
+<!--                            <div class="card summary-card">-->
+<!--                                <div class="card-title"><span>Cash to equity</span></div>-->
+<!--                                <div class="card-body">-->
+<!--                                    idk-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+                <div class="inactive-table p-3" id="summary_table">
+                    <div class="row d-flex flex-row">
+                        <div class="col-12 col-md-3">
+                            <div class="card summary-card">
+                                <div class="card-title" id="asset-alloc"><span>Asset Allocation</span></div>
+                                <div class="card-body">
+                                    <div class="progress-stacked mb-3 rounded-1" style="height: 10px;">
+<!--                                        <div class="progress" style="width: 43.72%;" role="progressbar" aria-valuenow="43.72" aria-valuemin="0" aria-valuemax="100">-->
+<!--                                            <div class="progress-bar bg-progress-gradient border-end border-100 border-2"></div>-->
+<!--                                        </div>-->
+<!--                                        <div class="progress" style="width: 18.76%;" role="progressbar" aria-valuenow="18.76" aria-valuemin="0" aria-valuemax="100">-->
+<!--                                            <div class="progress-bar bg-info border-end border-100 border-2"></div>-->
+<!--                                        </div>-->
+<!--                                        <div class="progress" style="width: 9.38%;" role="progressbar" aria-valuenow="9.38" aria-valuemin="0" aria-valuemax="100">-->
+<!--                                            <div class="progress-bar bg-success border-end border-100 border-2"></div>-->
+<!--                                        </div>-->
+<!--                                        <div class="progress" style="width: 28.14%;" role="progressbar" aria-valuenow="28.14" aria-valuemin="0" aria-valuemax="100">-->
+<!--                                            <div class="progress-bar bg-200"></div>-->
+<!--                                        </div>-->
+                                    </div>
+                                    <div class="row d-flex flex-col asset-list">
+<!--                                        <div class="col">-->
+<!--                                            <span class="dot"></span>-->
+<!--                                            <span>BTC</span>-->
+<!--                                        </div>-->
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-12 col-md-3">
-                        <div class="card summary-card">
-                            <div class="card-title"></div>
-                            <div class="card-body"></div>
+                        <div class="col-12 col-md-3">
+                            <div class="card summary-card">
+                                <div class="card-title"><span>Diversity Index</span></div>
+                                <div class="card-body">
+                                    <div id="diversity-chart" class="chart-container"></div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-12 col-md-3">
-                        <div class="card summary-card">
-                            <div class="card-title"></div>
-                            <div class="card-body"></div>
+                        <div class="col-12 col-md-3">
+                            <div class="card summary-card">
+                                <div class="card-title"><span>Win Rate Days</span></div>
+                                <div class="card-body"></div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-12 col-md-3">
-                        <div class="card summary-card">
-                            <div class="card-title"></div>
-                            <div class="card-body"></div>
+                        <div class="col-12 col-md-3">
+                            <div class="card summary-card">
+                                <div class="card-title"><span>Cash to Equity</span></div>
+                                <div class="card-body">
+                                    <div id="cash-equity-chart" class="chart-container"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+<!--===============================-->
+<!--Create Order Card-->
+<!--===============================-->
 <div id="order-container">
     <div class="card order-card">
         <div class="card-title">
@@ -188,4 +272,42 @@
 
 {% block javascript %}
 <script src="{% static 'js/dashboard.js' %}"></script>
+<script>
+    let assetAllocJson = JSON.parse('{{ asset_allocation|safe }}');
+    const assetAllocDiv = document.querySelector('.progress-stacked');
+    const assetList = document.querySelector('.asset-list');
+
+    // ----------------------------------------------------
+    // Loading up the progress bar
+    // ----------------------------------------------------
+    for (let [ticker, data] of Object.entries(assetAllocJson)) {
+        const div = document.createElement('div');
+        div.classList.add('progress');
+        div.style.width = `${data.percentage}%`;
+        div.role = 'progressbar';
+        div.ariaValueNow = `${data.percentage}`;
+        div.ariaValueMin = '0';
+        div.ariaValueMax = '100';
+
+        const secondDiv = document.createElement('div');
+        secondDiv.classList.add('progress-bar', 'bg-progress-gradient', 'border-end', 'border-100', 'border-2');
+
+        div.appendChild(secondDiv);
+        assetAllocDiv.appendChild(div);
+
+        // Adding the asset to a list
+        const col = document.createElement('div');
+        col.classList.add('col');
+
+        const span = document.createElement('span');
+        span.classList.add('dot');
+        col.appendChild(span);
+
+        const tickerSpan = document.createElement('span');
+        tickerSpan.textContent = ticker;
+        col.appendChild(tickerSpan);
+        console.log(col);
+        assetList.appendChild(col);
+    }
+</script>
 {% endblock %}

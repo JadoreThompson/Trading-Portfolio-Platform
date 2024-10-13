@@ -6,17 +6,29 @@ from .models import Orders
 
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Sum
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
 
 @login_required
 def dashboard(request):
+    td = datetime.now()
+    yd = datetime.now() - timedelta(days=1)
+
     open_positions = Orders.objects.filter(user=request.user, is_active=True)
     closed_positions = Orders.objects.filter(user=request.user, is_active=False)
 
-    td = datetime.now()
-    yd = datetime.now() - timedelta(days=1)
+    # Generating a tuple of (ticker, percentage, cumulative amount) for each ticker the user has in open positions
+    allocs = open_positions.values('ticker').annotate(amount=Sum('unrealised_pnl'))
+    total_alloc = sum(item['amount'] for item in allocs)
+
+    asset_allocation = {
+        item['ticker']: {
+            'amount': item['amount'],
+            'percentage': (item['amount'] / total_alloc) * 100
+        } for item in allocs
+    }
 
     return render(request, "dashboard/dashboard.html", {
         'create_order_form': CreateOrderForm(),
@@ -26,7 +38,8 @@ def dashboard(request):
         'closed_positions': closed_positions,
         'day_change':  sum(
             order.realised_pnl for order in closed_positions if order.closed_at.year == td.year and order.closed_at.month == td.month and order.closed_at.day == td.day
-        ) - sum(order.realised_pnl for order in closed_positions if order.closed_at.year == yd.year and order.closed_at.month == yd.month and order.closed_at.day == yd.day)
+        ) - sum(order.realised_pnl for order in closed_positions if order.closed_at.year == yd.year and order.closed_at.month == yd.month and order.closed_at.day == yd.day),
+        'asset_allocation': json.dumps(asset_allocation)
     })
 
 

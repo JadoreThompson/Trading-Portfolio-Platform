@@ -181,6 +181,7 @@ document.addEventListener('DOMContentLoaded', function(){
         }
     }
 
+
     // Modal Activators
     document.querySelector('.open').addEventListener('click', function(){
         showTable(open_positions_table);
@@ -196,13 +197,12 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
     // ----------------------------------------------
-    // Portfolio Chart
+    // Charts
     // ----------------------------------------------
-    var chart = echarts.init(document.getElementById('portfolio-chart'));
+
+    // Portfolio Chart
+    var pfChart = echarts.init(document.getElementById('portfolio-chart'));
     var option = {
-//      title: {
-//        text: 'Balance ' + document.getElementById('balance').textContent //'Portfolio Growth'
-//      },
       tooltip: {
         trigger: 'axis',
         formatter: function (params) {
@@ -239,8 +239,58 @@ document.addEventListener('DOMContentLoaded', function(){
         containLabel: true
       }
     };
-    // Set the options for the chart
-    chart.setOption(option);
+    pfChart.setOption(option);
+//
+//    // Asset Allocation Chart
+//    // Assuming you have asset allocation data
+//    const assetAllocationData = [
+//        { value: 35, name: 'Stocks' },
+//        { value: 30, name: 'Bonds' },
+//        { value: 20, name: 'Real Estate' },
+//        { value: 15, name: 'Cash' }
+//    ];
+//
+//    // Initialize the ECharts instance
+//    const chart = echarts.init(document.getElementById('aa-chart'));
+//
+//    // Chart configuration
+//    const aaOption = {
+//        title: {
+//            text: 'Asset Allocation',
+//            left: 'center'
+//        },
+//        tooltip: {
+//            trigger: 'item',
+//            formatter: '{a} <br/>{b}: {c} ({d}%)'
+//        },
+//        legend: {
+//            orient: 'vertical',
+//            left: 'left'
+//        },
+//        series: [
+//            {
+//                name: 'Asset Allocation',
+//                type: 'pie',
+//                radius: '50%',
+//                data: assetAllocationData,
+//                emphasis: {
+//                    itemStyle: {
+//                        shadowBlur: 10,
+//                        shadowOffsetX: 0,
+//                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+//                    }
+//                }
+//            }
+//        ]
+//    };
+//
+//    // Set the chart option and render
+//    chart.setOption(aaOption);
+//
+//    // Optional: Make the chart responsive
+//    window.addEventListener('resize', function() {
+//        chart.resize();
+//    });
 
 
     // ----------------------------------------------

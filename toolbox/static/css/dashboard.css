@@ -73,3 +73,25 @@
     font-weight: 850;
     font-size: 1.5rem;
 }
+
+
+/*Table*/
+#summary_table,
+#summary_table .row,
+.summary-card {
+    height: 100%;
+}
+.table-container {
+    height: 25rem;
+}
+.summary-card .card-title {
+    padding: 0.5rem;
+}
+.summary-card .card-title span {
+    font-weight: 850;
+    font-size: 1.25rem;
+}
+.chart-container {
+    height: 200px;
+    width: 100%;
+}
