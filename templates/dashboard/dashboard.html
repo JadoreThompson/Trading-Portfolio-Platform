@@ -10,31 +10,10 @@
 
 {% block content %}
 <style>
-    .active-modal {
-        border-radius: 0.5rem 0.5rem 0 0;
-        border: 1px solid grey;
-        border-bottom: 1px solid white;
-    }
-
-    .active-table {
-        display: block;
-    }
-    .inactive-table {
-        display: none;
-    }
-    .dot {
-      display: inline-block;
-      width: 8px;   /* Adjust the size of the dot */
-      height: 8px;  /* Adjust the size of the dot */
-      border-radius: 70%;  /* Makes it a circle */
-      background-color: #000;  /* Default color, you can override with `bg-*` classes */
-      margin-right: 5px;  /* Adds space between the dot and the text */
-    }
-
 </style>
 
 <div id="custom-alert" class="custom-alert">
-    <span id="alertMessage">asda</span>
+    <span id="alertMessage"></span>
 </div>
 
 
@@ -54,19 +33,19 @@
             <div class="col-12 col-md-3 mx-2">
                 <div class="card stat-card">
                     <div class="card-title mb-0"><span>Day Change</span></div>
-                    <div class="card-body m-0 p-0"><span>{{ day_change }}</span></div>
+                    <div class="card-body m-0 p-0 dc"><span>{{ day_change }}</span></div>
                 </div>
             </div>
             <div class="col-12 col-md-3">
                 <div class="card stat-card">
                     <div class="card-title mb-0"><span>Unrealized gain</span></div>
-                    <div class="card-body m-0 p-0"><span>{{ unrealised_gain }}</span></div>
+                    <div class="card-body m-0 p-0 ug"><span>{{ unrealised_gain }}</span></div>
                 </div>
             </div>
             <div class="col-12 col-md-3">
                 <div class="card stat-card">
-                    <div class="card-title mb-0"><span>Realzied gain</span></div>
-                    <div class="card-body m-0 p-0"><span>{{ realised_gain }}</span></div>
+                    <div class="card-title mb-0"><span>Realised gain</span></div>
+                    <div class="card-body m-0 p-0 rg"><span>{{ realised_gain }}</span></div>
                 </div>
             </div>
         </div>
@@ -85,8 +64,31 @@
             </div>
             <div class="col-12 col-md-4">
                 <div class="container stat-container" style="height: 400px;">
-                    <div class="card">
-                        stats
+                    <!--===============================-->
+                    <!--Create Order Card-->
+                    <!--===============================-->
+                    <div id="order-container">
+                        <div class="order-card">
+                            <div class="card-title">
+                                <h2>New Order</h2>
+                            </div>
+                            <div class="card-body">
+                                <form action="{% url 'create_order' %}" method="post" id="order-form">
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <label for="id_ticker">Symbol</label>
+                                        <input type="text" name="ticker" id="id_ticker" required>
+                                        <div id="suggestions" class="suggestions" style="display: none;"></div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="id_dollar_amount">Dollar Amount</label>
+                                        <input type="number" name="dollar_amount" id="id_dollar_amount" required>
+                                    </div>
+                                    <input type="submit" value="Submit Order">
+                                    <span class="order-msg"></span>
+                                </form>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -100,138 +102,141 @@
             <button class="btn all">All Positions</button>
             <button class="btn summaries">Summaries</button>
         </div>
-        <div class="container table-container row w-100 rounded border border-dark-subtle mb-5">
-            <div class="table-container">
-                <table id="open_positions_table" class="active-table">
-                    <thead class="border-bottom border-dark-subtle">
+        <div class="container  table-container row w-100 border border-dark-subtle mb-5">
+            <table id="open_positions_table" class="mytable">
+                <thead class="border-bottom border-dark-subtle">
+                <tr>
+                    <td>Ticker</td>
+                    <td>Open Price</td>
+                    <td>Unrealised P\L</td>
+                    <td><i class="fa-solid fa-bars"></i></td>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- Placeholder open positions -->
+                {% for p in open_positions %}
                     <tr>
-                        <td>Ticker</td>
-                        <td>Open Price</td>
-                        <td>Unrealised P\L</td>
-                        <td><i class="fa-solid fa-bars"></i></td>
+                        <td>{{ p.ticker }}
+                            <span hidden>{{ p.order_id }}</span>
+                        </td>
+                        <td>{{ p.open_price }}</td>
+                        <td class="upl">{{ p.unrealised_pnl }}</td>
+                        <td><i class="fa-solid fa-xmark close-open-order"></i></td>
                     </tr>
-                    </thead>
-                    <tbody>
-                    <!-- Placeholder open positions -->
-                    {% for p in open_positions %}
-                        <tr>
-                            <td>{{ p.ticker }}
-                                <span hidden>{{ p.order_id }}</span>
-                            </td>
-                            <td>{{ p.open_price }}</td>
-                            <td class="upl">{{ p.unrealised_pnl }}</td>
-                            <td><i class="fa-solid fa-xmark close-open-order"></i></td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+                {% endfor %}
+                </tbody>
+            </table>
 
-                <!-- Historical Trades Table -->
-                <table id="all_positions_table" class="inactive-table">
-                    <thead class="border-bottom border-dark-subtle">
-                    <tr>
-                        <td>Ticker</td>
-                        <td>Realised P\L</td>
-                        <td>Open Time</td>
-                        <td>Investment</td>
-                        <td>Open Price</td>
-                        <td>Close Price</td>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for order in closed_positions %}
+            <table id="all_positions_table" class="inactive-table mytable">
+                <thead class="border-bottom border-dark-subtle">
+                <tr>
+                    <td>Ticker</td>
+                    <td>Realised P\L</td>
+                    <td>Open Time</td>
+                    <td>Investment</td>
+                    <td>Open Price</td>
+                    <td>Close Price</td>
+                </tr>
+                </thead>
+                <tbody>
+                {% for order in closed_positions %}
                     <tr>
                         <td>{{order.ticker}}</td>
-                        <td>{{ order.realised_pnl }}</td>
+                        <td class="rpl">{{ order.realised_pnl }}</td>
                         <td>{{ order.dollar_amount}}</td>
                         <td>{{ order.created_at }}</td>
                         <td>{{ order.open_price }}</td>
                         <td>{{ order.close_price }}</td>
                     </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+                {% endfor %}
+                </tbody>
+            </table>
 
-                <!--Summary Card-->
-                <div class="inactive-table p-3" id="summary_table">
-                    <div class="row d-flex flex-row">
-                        <div class="col-12 col-md-3">
-                            <div class="card summary-card">
-                                <div class="card-title" id="asset-alloc"><span>Asset Allocation</span></div>
-                                <div class="card-body">
-                                    <div class="progress-stacked mb-3 rounded-1" style="height: 10px;"></div>
-                                    <div class="row d-flex flex-col asset-list"></div>
+            <div class="inactive-table p-3" id="summary_table">
+                <div class="row d-flex flex-row">
+                    <div class="col-12 col-md-3">
+                        <div class="card summary-card">
+                            <div class="card-title" id="asset-alloc"><span>Asset Allocation</span></div>
+                            <div class="card-body">
+                                <div class="progress-stacked mb-3 rounded-1" style="height: 10px;"></div>
+                                <div class="row d-flex flex-col asset-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="card summary-card">
+                            <div class="card-title"><span>Statistics</span></div>
+                            <div class="card-body row d-flex flex-col">
+                                <div class="container summary-item">
+                                    <span class="mb-2">Sharpe Ratio</span>
+                                    <span>{{ sharpe }}</span>
+                                </div>
+                                <div class="container summary-item">
+                                    <span class="mb-2">Sortino</span>
+                                    <span>{{ sortino }}</span>
+                                </div>
+                                <div class="container summary-item">
+                                    <span class="mb-2">Average Daily Return</span>
+                                    <span>{{ average_daily_return }}</span>
+                                </div>
+                                <div class="container summary-item">
+                                    <span class="mb-2">Win Rate</span>
+                                    <span>{{ win_rate }}</span>
+                                </div>
+                                <div class="container summary-item">
+                                    <span class="mb-2">Total Volume</span>
+                                    <span>{{ volume }}</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-12 col-md-3">
-                            <div class="card summary-card">
-                                <div class="card-title"><span>Statistics</span></div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="card summary-card">
+                            <div class="card-title"><span>Daily Profit Sum</span></div>
+                            <div class="card-body row d-flex flex-col">
                                 <div class="card-body row d-flex flex-col">
-                                    <div class="container summary-item">
-                                        <span class="mb-2">Sharpe Ratio</span>
-                                        <span></span>
+                                    <div class="contianer summary-item">
+                                        <span class="mb-2">Sunday</span>
+                                        {{ daily_wins.Sunday }}
                                     </div>
-                                    <div class="container summary-item">
-                                        <span class="mb-2">Beta</span>
-                                        <span></span>
+                                    <div class="contianer summary-item">
+                                        <span class="mb-2">Monday</span>
+                                        {{ daily_wins.Monday }}
                                     </div>
-                                    <div class="container summary-item">
-                                        <span class="mb-2">Average Daily Return</span>
-                                        <span></span>
+                                    <div class="contianer summary-item">
+                                        <span class="mb-2">Tuesday</span>
+                                        {{ daily_wins.Tuesday }}
                                     </div>
-                                    <div class="container summary-item">
-                                        <span class="mb-2">Win Rate</span>
-                                        <span></span>
+                                    <div class="contianer summary-item">
+                                        <span class="mb-2">Wednesday</span>
+                                        {{ daily_wins.Wednesday }}
                                     </div>
-                                    <div class="container summary-item">
-                                        <span class="mb-2">Total Volume</span>
-                                        <span></span>
+                                    <div class="contianer summary-item">
+                                        <span class="mb-2">Thursday</span>
+                                        {{ daily_wins.Thursday }}
+                                    </div>
+                                    <div class="contianer summary-item">
+                                        <span class="mb-2">Friday</span>
+                                        {{ daily_wins.Friday }}
+                                    </div>
+                                    <div class="contianer summary-item">
+                                        <span class="mb-2">Saturday</span>
+                                        {{ daily_wins.Saturday }}
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-12 col-md-3">
-                            <div class="card summary-card">
-                                <div class="card-title"><span>Win Rate Days</span></div>
-                                <div class="card-body"></div>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-3">
-                            <div class="card summary-card">
-                                <div class="card-title"><span>Cash to Equity</span></div>
-                                <div class="card-body"></div>
-                            </div>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <div class="card summary-card">
+                            <div class="card-title"><span>Cash to Equity</span></div>
+                            <div class="card-body"></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-<!--===============================-->
-<!--Create Order Card-->
-<!--===============================-->
-<div id="order-container">
-    <div class="card order-card">
-        <div class="card-title">
-            <h2>New order</h2>
-            <i class="fa-solid fa-xmark hover" id="close-order"></i>
-        </div>
-        <div class="card-body">
-            <form action="{% url 'create_order' %}" method="post" id="order-form">
-                {% csrf_token %}
-                <div class="row">
-                    <input type="text" name="ticker" id="id_ticker" required>
-                    <div id="suggestions" class="suggestions" style="display: none;"></div>
-                </div>
-                <input type="number" name="dollar_amount" id="id_dollar_amount" required>
-                <input type="submit" value="Submit">
-                <span class="order-msg"></span>
-            </form>
-        </div>
-    </div>
-</div>
 </main>
 {% endblock %}
 
@@ -273,5 +278,11 @@
         col.appendChild(tickerSpan);
         assetList.appendChild(col);
     }
+
+    // ------------------------------------------------------
+    // Unrealised Gain Updater
+    // ------------------------------------------------------
+    const openPositions = JSON.parse('{{ open_js|safe }}');
+
 </script>
 {% endblock %}

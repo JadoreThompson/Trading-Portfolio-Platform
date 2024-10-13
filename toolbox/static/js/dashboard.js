@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', function(){
+    let openObject = {};
+    openPositions.forEach(position => { openObject[position.order_id] = position.unrealised_pnl; });
+
     const email = document.getElementById('email').textContent;
     const alertBox = document.getElementById('custom-alert');
 
@@ -15,15 +18,13 @@ document.addEventListener('DOMContentLoaded', function(){
 
     order_socket.onmessage = async function(e){
         const wsMsg = JSON.parse(e.data);
-        console.log(wsMsg);
-        if (wsMsg?.type === 'insufficient_balance') { console.log(wsMsg.message); }
 
-        else if (wsMsg?.type === 'order_confirmation') {
+        if (wsMsg?.type === 'order_confirmation') {
             document.querySelector('.order-msg').textContent = wsMsg.message;
             await showAlert('Order Created');
         }
 
-        // Adding the new plced order to the open positions table
+        // Adding the new placed order to the open positions table
         else if (wsMsg?.topic === 'order_created') {
             const tbody = open_positions_table.querySelector('tbody');
             const tr = document.createElement('tr');
@@ -37,9 +38,7 @@ document.addEventListener('DOMContentLoaded', function(){
                     const span = document.createElement('span')
                     span.textContent = wsMsg.order_id;
                     span.style.display = 'none';
-                    console.log(span);
                     td.appendChild(span);
-                    console.log(td);
                 }
                 else if (col === 'unrealised_pnl') {
                     td.classList.add('upl');
@@ -58,8 +57,7 @@ document.addEventListener('DOMContentLoaded', function(){
             tr.appendChild(close);
 
             tbody.appendChild(tr);
-
-            document.getElementById('close-order').click();
+            await showAlert('Order Created', 'good');
         }
 
         // Shifting the closed position from open positions table to all positions table
@@ -76,19 +74,24 @@ document.addEventListener('DOMContentLoaded', function(){
 
             const cols = ['ticker', 'realised_pnl', 'created_at', 'dollar_amount', 'open_price', 'close_price'];
             cols.forEach(col => {
-                console.log(wsMsg[col]);
                 const td = document.createElement('td');
                 td.textContent = wsMsg[col];
+                if (col === 'dollar_amount') { td.classList.add('rpl');}
                 tr.appendChild(td);
             });
             tbody.appendChild(tr);
+
+            // Update realised pnl
         }
 
         // Increasing the Unrealised Pnl Live
         else if (wsMsg?.topic === 'position_update') {
             let span = Array.from(document.querySelectorAll('span')).find(span => span.textContent.trim() === wsMsg.order_id);
             const tr = span?.closest('tr');
+
+            openObject[wsMsg.order_id] = parseFloat(wsMsg.amount);
             tr.querySelector('.upl').textContent = wsMsg.amount.toFixed(2);
+            calculateOpenSum();
         }
     };
 
@@ -97,14 +100,53 @@ document.addEventListener('DOMContentLoaded', function(){
     }
 
 
+    // -------------------------------------------
+    //  Stat Card
+    // -------------------------------------------
+
+    // Calculate the sum of unrealised gain
+    function calculateOpenSum() {
+        let sum = Object.values(openObject).reduce((sum, value) => sum + value, 0).toFixed(2);
+        let ugElement = document.querySelector('.ug').querySelector('span');
+
+        sum = Object.values(openObject).reduce((sum, value) => sum + value, 0).toFixed(2);
+        let str = '';
+        if (sum < 0) {
+            ugElement.style.color = 'red';
+            str = "-$" + sum.slice(1);
+        } else {
+            str = "$" + sum;
+            ugElement.style.color = 'green';
+        }
+
+        ugElement.textContent = str;
+    }
+    calculateOpenSum();
+
+    // Color changes for top row stats
+    function assignColor(targetStat) {
+        let str = '';
+        let targetNum = parseFloat(targetStat.textContent);
+        if (targetNum < 0){
+            targetStat.style.color ='red';
+            str = "-$" + String(targetNum).slice(1);
+        } else {
+            str = "$" + targetNum;
+            targetStat.style.color = 'green';
+        }
+        targetStat.textContent = str;
+    }
+    const dayChange = document.querySelector('.dc').querySelector('span');
+    const realisedGain = document.querySelector('.rg').querySelector('span');
+    assignColor(realisedGain);
+    assignColor(dayChange);
+
+
     // ----------------------------------------------
     // Order Relating
     // ----------------------------------------------
 
     // Order Card
-    document.getElementById('close-order').addEventListener('click', function(){
-        document.getElementById('order-container').style.display = 'none';
-    });
     document.getElementById('create-order-btn').addEventListener('click', function(){
         document.getElementById('order-container').style.display = 'flex';
     });
@@ -153,6 +195,7 @@ document.addEventListener('DOMContentLoaded', function(){
         });
     });
 
+
     // ----------------------------------------------
     // Tables
     // ----------------------------------------------
@@ -168,20 +211,20 @@ document.addEventListener('DOMContentLoaded', function(){
         });
     });
 
+    // Shows the table on click of modal button
     function showTable(targetTable) {
-        if (!targetTable.classList.contains('active-table')) {
-            const activeTables = document.querySelectorAll('.active-table');
+        if (targetTable.classList.contains('inactive-table')) {
+            const activeTables = document.querySelector('.table-container').children;
             if (activeTables) {
-                activeTables.forEach(table => {
-                    table.classList.remove('active-table');
+                Array.from(activeTables).forEach((table, index) => {
                     table.classList.add('inactive-table');
                 });
+                targetTable.classList.remove('inactive-table');
             }
-            targetTable.classList.remove('inactive-table');
-            targetTable.classList.add('active-table');
         }
     }
 
+    // Table Pagination
 
     // Modal Activators
     document.querySelector('.open').addEventListener('click', function(){
@@ -189,6 +232,7 @@ document.addEventListener('DOMContentLoaded', function(){
     });
 
     document.querySelector('.all').addEventListener('click', function(){
+
         showTable(all_positions_table);
     });
 
@@ -227,9 +271,21 @@ document.addEventListener('DOMContentLoaded', function(){
           type: 'line',
           data: [1000, 1500, 1200, 1800, 2500, 2200, 2700],
           smooth: true,
-          areaStyle: {},
+          symbol: 'none',
+          areaStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                {
+                    offset: 0,
+                    color: 'rgb(142, 167, 209)'
+                },
+                {
+                    offset: 1,
+                    color: 'rgb(240, 240, 240)'
+                }
+            ])
+          },
           itemStyle: {
-            color: '#5470C6'
+            color: 'rgba(133, 157, 230)'
           }
         }
       ],
@@ -241,22 +297,26 @@ document.addEventListener('DOMContentLoaded', function(){
       }
     };
     pfChart.setOption(option);
+    window.addEventListener('resize', function(){
+        pfChart.resize();
+    });
 
 
     // ----------------------------------------------
     // Alert
     // ----------------------------------------------
-    async function showAlert(message) {
+    async function showAlert(message, alert_type='info') {
         try {
             const span = alertBox.querySelector("span");
 
             alertBox.classList.add("active");
+            if (alert_type === 'good' ){ alertBox.classList.add('good') ; }
             span.textContent = message;
 
             await sleep(3000);
 
             // Removing alert
-            alertBox.classList.remove("active");
+            alertBox.classList.remove("active", 'good');
             span.textContent = "";
 
         } catch(e) {

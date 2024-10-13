@@ -82,11 +82,14 @@ class OrderConsumer(AsyncWebsocketConsumer):
 
         def func(data):
             # Remove CSRF token and fetch current price for the ticker.
-            data.pop('csrfmiddlewaretoken', None)
             data['open_price'] = float(redis_client.get(data['ticker']).decode()) if float(redis_client.get(data['ticker']).decode()) else fetch_price(tick=data['ticker'])
             data['is_active'] = True
 
-            return Orders.objects.create(**{key: value for key, value in data.items() if key != 'action'})
+            return Orders.objects.create(**{
+                key: value for
+                key, value in data.items()
+                if key not in ['action', 'csrfmiddlewaretoken']
+            })
 
         def func2(data):
             # Check if the user has enough balance to create the order.
@@ -97,16 +100,16 @@ class OrderConsumer(AsyncWebsocketConsumer):
             user.save()
             return 1
 
-        if await sync_to_async(func2)(data):
+        valid = await sync_to_async(func2)(data)
+        if valid:
             order = await sync_to_async(func)(data)
-            order_dict = {key: value for key, value in vars(order).items() if key != '_state'}
-            for k, v in order_dict.items():
-                if isinstance(v, (uuid.UUID, datetime, bytes)):
-                    order_dict[k] = str(v)
-
-            json_dict = {'topic': 'order_created'}
-            json_dict.update(order_dict)
-            await self.send(json.dumps(json_dict))
+            order_dict = {
+                key: (v if not isinstance(v, (uuid.UUID, datetime, bytes)) else str(v))
+                for key, v in vars(order).items()
+                if key != '_state'
+            }
+            order_dict.update({'topic': 'order_created'})
+            await self.send(json.dumps(order_dict))
             return None
         else:
             await self.send(json.dumps({'type': 'insufficient_balance', 'message': 'Insufficient funds'}))
@@ -115,7 +118,6 @@ class OrderConsumer(AsyncWebsocketConsumer):
     async def position_closed(self, event):
         """
         Handles the event when a position is closed.
-
         Sends a message to the client confirming the closure of a position.
 
         Args:

@@ -38,7 +38,6 @@ async def save_unrealised_pl(order: Orders, new_equity: int | float):
     :param order: The order instance to update.
     :param new_equity: The calculated new equity value.
     """
-
     def func():
         order.unrealised_pnl = new_equity
         order.save()
@@ -55,17 +54,16 @@ async def close(order, close_price, amount):
     :param close_price: The price at which the order is closed.
     :param amount: The amount of realized PnL to apply to the user.
     """
-
     def func(order, close_price: int | float, amount: int | float):
         if order.is_active and not order.closed_at:
             user = Users.objects.get(email=order.user_id)
-            user.balance -= order.dollar_amount - amount
+            user.balance += (order.dollar_amount + amount)
             user.save()
 
             order.is_active = not order.is_active
             order.close_price = close_price
             order.closed_at = datetime.now()
-            order.realised_pnl = order.dollar_amount - (order.dollar_amount - amount)
+            order.realised_pnl = float("{:.2f}".format(order.dollar_amount - (order.dollar_amount - amount)))
             order.unrealised_pnl = 0.0
             print(f"[CLOSE][EVENT] >>> Closing Order: {order.order_id}")
             order.save()
@@ -107,11 +105,6 @@ async def start_order_updater():
 
     This function should run in the background.
     """
-    # async def func(order):
-    #     price = fetch_price(order)
-    #     if isinstance(price, int | float):
-    #         await process_order(price, order)
-
     while True:
         active_orders = await retrieve_order()
         for order in active_orders:
@@ -131,7 +124,7 @@ async def process_order(current_ticker_price, order: Orders):
     :param order: The order instance being processed.
     """
     price_change = (current_ticker_price - order.open_price) / order.open_price
-    new_equity = order.dollar_amount - (order.dollar_amount * (1 + price_change))
+    new_equity = float("{:.2f}".format(order.dollar_amount - (order.dollar_amount * (1 + price_change))))
     if new_equity == -1 * order.dollar_amount:
         await close_position(order, current_ticker_price, new_equity)
     else:
