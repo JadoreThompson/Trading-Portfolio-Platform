@@ -83,10 +83,18 @@ document.addEventListener('DOMContentLoaded', function(){
             tbody.appendChild(tr);
 
             await showAlert(wsMsg.reason);
-            // Update realised pnl
+
+            // Update Balance and realised pnl
             const balanceElement = document.getElementById('balance');
             balanceElement.textContent = parseFloat(wsMsg.balance).toFixed(2);
             assignColor(balanceElement, false);
+
+            let realisedSpan = document.querySelector('.rg').querySelector('span');
+            let num = Number(parseFloat(realisedSpan.textContent.replace('$', '')).toFixed(2));
+            num = num + wsMsg.amount;
+            realisedSpan.textContent = num;
+            console.log(realisedSpan);
+            assignColor(realisedSpan);
         }
 
         // Increasing the Unrealised Pnl Live
@@ -101,8 +109,12 @@ document.addEventListener('DOMContentLoaded', function(){
     };
 
     order_socket.onopen = function(e){
-        document.querySelector('.connect-btn').style.backgroundColor = 'green';
+        document.querySelector('.connect-btn').style.backgroundColor = '#037B66';
         console.log('Connection open');
+    }
+    order_socket.onclose = function(e) {
+        document.querySelector('.connect-btn').style.backgroundColor = '#D60A22';
+        document.querySelector('.connect-btn').nextElementSibling.textContent = 'Disconnected';
     }
 
 
@@ -114,17 +126,16 @@ document.addEventListener('DOMContentLoaded', function(){
     function calculateOpenSum() {
         let sum = Object.values(openObject).reduce((sum, value) => sum + value, 0).toFixed(2);
         let ugElement = document.querySelector('.ug').querySelector('span');
-
+        console.log('Open sum called');
         sum = Object.values(openObject).reduce((sum, value) => sum + value, 0).toFixed(2);
         let str = '';
         if (sum < 0) {
-            ugElement.style.color = 'red';
+            ugElement.style.color = '#D60A22';
             str = "-$" + sum.slice(1);
         } else {
-            str = "$" + sum;
-            ugElement.style.color = 'green';
+            str = "+$" + sum;
+            ugElement.style.color = '#037B66';
         }
-
         ugElement.textContent = str;
     }
     calculateOpenSum();
@@ -134,11 +145,15 @@ document.addEventListener('DOMContentLoaded', function(){
         let str = '';
         let targetNum = parseFloat(targetStat.textContent);
         if (targetNum < 0){
-            if (color) { targetStat.style.color ='red'; }
-            str = "-$" + String(targetNum).slice(1);
+            if (color) {
+                targetStat.style.color ='#D60A22';
+                str = "-$" + String(targetNum).slice(1);
+            } else { str = "$" + String(targetNum).slice(1); }
         } else {
-            str = "$" + targetNum;
-            if (color) { targetStat.style.color ='green'; }
+            if (color) {
+                targetStat.style.color ='#037B66';
+                str = "+$" + targetNum;
+            } else { str = "$" + targetNum; }
         }
         targetStat.textContent = str;
     }
@@ -226,8 +241,6 @@ document.addEventListener('DOMContentLoaded', function(){
         }
     }
 
-    // Table Pagination
-
     // Modal Activators
     document.querySelector('.open').addEventListener('click', function(){
         showTable(open_positions_table);
@@ -248,6 +261,42 @@ document.addEventListener('DOMContentLoaded', function(){
     // ----------------------------------------------
 
     // Portfolio Chart
+    // ------------------------------------------------
+
+    // Toggling Interval on Portfolio Growth Chart
+    const growthIntervalUrl = '/dashboard/growth-interval';
+
+    async function getInterval(interval){
+        const rsp = await fetch(`${growthIntervalUrl}/?interval=${interval}`);
+//        let data = await rsp.json();
+        return await rsp.json();
+    }
+
+    function reloadPortfolioChart(data) {
+        const cols = Object.keys(data).filter(key => key != 'starting_balance');
+        const values = cols.map(key => { return Number(parseFloat(( data[key] / data['starting_balance']) * 100).toFixed(2)); })
+        option['xAxis']['data'] = cols;
+        option['series'][0]['data'] = values;
+        pfChart.setOption(option);
+    }
+
+    document.querySelector('.week').addEventListener('click', async function(){
+        const data = await getInterval('week');
+        reloadPortfolioChart(data);
+    });
+
+    document.querySelector('.month').addEventListener('click', async function(){
+        const data = await getInterval('month');
+        reloadPortfolioChart(data);
+    });
+
+    document.querySelector('.year').addEventListener('click', async function(){
+        const data = await getInterval('year');
+        reloadPortfolioChart(data);
+    });
+
+    // Generating Portfolio Growth Chart
+    const cols = Object.keys(balanceGrowth).filter(key => key != 'starting_balance');
     var pfChart = echarts.init(document.getElementById('portfolio-chart'));
     var option = {
       tooltip: {
@@ -259,19 +308,19 @@ document.addEventListener('DOMContentLoaded', function(){
       xAxis: {
         type: 'category',
         boundaryGap: false,
-        data: ['2024-10-01', '2024-10-02', '2024-10-03', '2024-10-04', '2024-10-05', '2024-10-06', '2024-10-07']
+        data: cols
       },
       yAxis: {
         type: 'value',
         axisLabel: {
-          formatter: '{value} USD'
+          formatter: '{value} %'
         }
       },
       series: [
         {
           name: 'Portfolio Value',
           type: 'line',
-          data: [1000, 1500, 1200, 1800, 2500, 2200, 2700],
+          data: cols.map(key => { return Number(parseFloat((balanceGrowth[key] / balanceGrowth['starting_balance']) * 100).toFixed(2)); }),
           smooth: true,
           symbol: 'none',
           areaStyle: {

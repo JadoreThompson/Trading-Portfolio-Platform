@@ -9,8 +9,8 @@ from .formulas import sharpe_ratio, sortino_ratio, sharpe_std
 from .price_updater import redis_client
 
 # Django
-from django.db.models import Case, When, FloatField, Count, Avg
-from django.db.models.functions import ExtractMonth, ExtractDay, ExtractWeekDay
+from django.db.models import Case, When, FloatField, Count, Avg, DateTimeField
+from django.db.models.functions import ExtractMonth, ExtractDay, ExtractWeekDay, Trunc
 
 from django.http import JsonResponse
 from django.db.models import Sum
@@ -21,7 +21,6 @@ from django.contrib.auth.decorators import login_required
 @login_required
 def dashboard(request):
     td = datetime.now()
-    yd = datetime.now() - timedelta(days=1)
 
     open_positions = Orders.objects.filter(user=request.user, is_active=True)
     closed_positions = Orders.objects.filter(user=request.user, is_active=False)
@@ -29,7 +28,8 @@ def dashboard(request):
     # Asset Allocation
     allocs = open_positions.values('ticker').annotate(amount=Sum('unrealised_pnl'))
     total_alloc = sum(item['amount'] for item in allocs if item['amount'])
-    asset_allocation = {item['ticker']: { 'amount': item['amount'], 'percentage': (item['amount'] / total_alloc) * 100} for item in allocs if item.get('amount', None)}
+    asset_allocation = {item['ticker']: {'amount': item['amount'], 'percentage': (item['amount'] / total_alloc) * 100}
+                        for item in allocs if item.get('amount', None)}
 
     # Get distinct months from closed positions
     months = closed_positions.annotate(month=ExtractMonth('created_at')).values_list('month', flat=True).distinct()
@@ -37,10 +37,12 @@ def dashboard(request):
     # Aggregate monthly returns for each distinct month
     monthly_positions = closed_positions.annotate(month=ExtractMonth('created_at')).values('month').annotate(
         monthly_returns=Sum('realised_pnl'))
-    monthly_positions = closed_positions.values('created_at').annotate(months=ExtractMonth('created_at')).annotate(monthly_returns=Sum('months'))
+    monthly_positions = closed_positions.values('created_at').annotate(months=ExtractMonth('created_at')).annotate(
+        monthly_returns=Sum('months'))
     months = []
     for item in monthly_positions:
-        if item['created_at'].month in months: pass
+        if item['created_at'].month in months:
+            pass
         else:
             months.append(item['created_at'].month)
 
@@ -59,44 +61,46 @@ def dashboard(request):
     except (ZeroDivisionError, TypeError):
         win_rate = 0
 
-    daily_win_rate = closed_positions\
-        .annotate(weekday=ExtractWeekDay('created_at'))\
-        .values('weekday')\
+    daily_pnl = closed_positions \
+        .annotate(weekday=ExtractWeekDay('created_at')) \
+        .values('weekday') \
         .annotate(total_return=Sum('realised_pnl'))
+
     wkday_map = {
         1: 'Sunday', 2: 'Monday', 3: 'Tuesday', 4: 'Wednesday',
         5: 'Thursday', 6: 'Friday', 7: 'Saturday', 8: 'Sunday'
     }
-    for item in daily_win_rate:
-        item['weekday'] = wkday_map.get(item['weekday'], 'Unknown')
 
-    daily_wins = {item['weekday']: float("{:.2f}".format(item['total_return'])) for item in daily_win_rate}
+    daily_wins = {wkday_map.get(item['weekday'], 'Unknown'): float("{:.2f}".format(item['total_return'])) for item in
+                  daily_pnl}
 
-    o = [
+    balance_growth = {str((td - timedelta(days=item['weekday'])).date()): item['total_return'] for item in daily_pnl}
+    balance_growth['starting_balance'] = float(
+        "{:.2f}".format(request.user.balance + sum(daily_wins[key] for key in daily_wins)))
+
+    open_pos = [
         {
             k: (v if not isinstance(v, (uuid.UUID, datetime)) else str(v))
             for k, v in order.items() if k != '_state'
         }
         for order in [vars(order) for order in open_positions]
     ]
-    print(json.dumps(o, indent=4))
-
-    data = {str(item.order_id): item.realised_pnl for item in open_positions}
 
     return render(request, "dashboard/dashboard.html", {
         'create_order_form': CreateOrderForm(),
         'email': request.user.email,
         'balance': float("{:.2f}".format(request.user.balance)),
-        'open_positions': o,
-        'open_js': json.dumps(o),
+        'open_positions': open_pos,
+        'open_js': json.dumps(open_pos),
         'closed_positions': closed_positions,
-        'day_change':  float("{:.2f}".format(sum(
+        'day_change': float("{:.2f}".format(sum(
             order.realised_pnl for order in closed_positions if
             order.closed_at.year == td.year
             and order.closed_at.month == td.month
             and order.closed_at.day == td.day
         ))),
-        'unrealised_gain': float("{:.2f}".format(sum(order.unrealised_pnl for order in open_positions if order.unrealised_pnl))),
+        'unrealised_gain': float(
+            "{:.2f}".format(sum(order.unrealised_pnl for order in open_positions if order.unrealised_pnl))),
         'realised_gain': float("{:.2f}".format(sum(order.realised_pnl for order in closed_positions))),
         'asset_allocation': json.dumps(asset_allocation),
         'sharpe': sharpe,
@@ -104,7 +108,8 @@ def dashboard(request):
         'average_daily_return': float("{:.2f}".format(average_daily_return['realised_pnl__avg'])),
         'win_rate': win_rate,
         'volume': sum(order.dollar_amount for order in closed_positions),
-        'daily_wins': daily_wins
+        'daily_wins': daily_wins,
+        'balance_growth': json.dumps(balance_growth)
     })
 
 
@@ -126,11 +131,57 @@ def create_order(request):
         return JsonResponse(status=403, data={"error": "Invalid request"})
 
 
-'''Returns the ticker that starts with char'''
 def get_tickers(request):
-    tickers = ['BTC/USDT']
+    """
+    Returns the ticker that starts with the input
+    :param request:
+    :return:
+    """
+    tickers = [
+        'BTC/USDT', 'ETH/USDT', 'LTC/USDT', 'SOL/USDT'
+    ]
     if request.method == 'GET':
         q = request.GET.get('q', '').upper()
         similars = [item for item in tickers if item.startswith(q)]
         return JsonResponse(status=200, data=similars, safe=False)
     return JsonResponse(status=400, data={'error': 'Invalid request'})
+
+
+def get_growth(request):
+    if request.method == 'GET':
+        print('got request')
+        interval = request.GET.get('interval')
+        if interval not in ['week', 'month', 'year']:
+            return JsonResponse(status=405, data={'error': 'Invalid interval. Must be week, month, year'})
+
+        positions = Orders.objects.filter(user=request.user, is_active=False)
+        if interval == 'week':
+            target_interval = 'day'
+            trades = positions.filter(closed_at__gt=datetime.now() - timedelta(days=7))\
+                .annotate(day=Trunc('closed_at', 'day'))\
+                .values('day')\
+                .annotate(total_return=Sum('realised_pnl'))\
+                .order_by('day')
+        if interval == 'month':
+            target_interval = 'week'
+            trades = positions.filter(closed_at__gt=datetime.now() - timedelta(days=30))\
+                .annotate(week=Trunc('closed_at', 'week'))\
+                .values('week')\
+                .annotate(total_return=Sum('realised_pnl'))\
+                .order_by('week')
+        if interval == 'year':
+            target_interval = 'month'
+            trades = positions.filter(closed_at__gt=datetime.now() - timedelta(days=365))\
+                .annotate(month=Trunc('closed_at', 'month'))\
+                .values('month')\
+                .annotate(total_return=Sum('realised_pnl'))\
+                .order_by('month')
+
+        data = {
+            str(item[target_interval].date()): float("{:.2f}".format(item['total_return']))
+            for item in trades
+        }
+        data['starting_balance'] = request.user.balance + sum(data[key] for key in data)
+        print(json.dumps(data, indent=4))
+        return JsonResponse(status=200, data=data)
+    return JsonResponse(status=400, data={'error': 'bad request'})

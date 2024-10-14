@@ -81,8 +81,12 @@ class OrderConsumer(AsyncWebsocketConsumer):
         """
 
         def func(data):
-            # Remove CSRF token and fetch current price for the ticker.
-            data['open_price'] = float(redis_client.get(data['ticker']).decode()) if float(redis_client.get(data['ticker']).decode()) else fetch_price(tick=data['ticker'])
+            """Creating the order"""
+            try:
+                data['open_price'] = float(redis_client.get(data['ticker']).decode())
+            except AttributeError:
+                data['open_price'] = fetch_price(tick=data['ticker'])
+
             data['is_active'] = True
 
             return Orders.objects.create(**{

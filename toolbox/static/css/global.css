@@ -2,13 +2,14 @@
     --primary-color: #d4c19c;
     --secondary-color: #8c7a5b;
     --background-color: #faf9f7;
-    --text-color: #5c5245;
+    --text-color: #232A31;
     --sidebar-bg: #333;
     --sidebar-text: #fff;
     --sidebar-hover: #444;
 }
 * {
       font-family: "Roboto", sans-serif;
+      color: #232A31;
 }
 html {
     scroll-behavior: smooth;

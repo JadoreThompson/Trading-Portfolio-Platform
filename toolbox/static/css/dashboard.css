@@ -20,8 +20,9 @@ input:focus {
     cursor: pointer;
 }
 .good {
-    background-color: #a0d49b !important;
+    background-color: #037B66 !important;
 }
+
 
 
 /* Custom Alert */
@@ -138,7 +139,9 @@ td {
     max-height: 15rem;
 }
 
+/* -------------------------------------------------- */
 /* Order */
+/* -------------------------------------------------- */
 .order-card {
     background-color: #ffffff;
     border-radius: 8px;
@@ -230,4 +233,16 @@ td {
 }
 .order-card {
     height: 100%;
+}
+
+/* -------------------------------------------------- */
+/* Growth Chart */
+/* -------------------------------------------------- */
+div.growth-interval-container {
+    margin-top: 4rem;
+}
+button.btn.growth-interval-button {
+    background-color: #dceaf7 !important;
+    color: #5091d4 !important;
+    margin-right: 0.5rem;
 }
