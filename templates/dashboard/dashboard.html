@@ -17,9 +17,12 @@
 </div>
 
 
-<header style="border-bottom: 1px solid black;">
+<header style="border-bottom: 1px solid black; display: flex; align-items: center;">
     <div id="email" class="btn">{{ email }}</div>
-    <span class="dot bg-primary"></span>
+    <div class="conn-status" style="display: flex; align-items: center;">
+        <span style="margin-right: 0.5rem;" class="dot connect-btn"></span>
+        <span>Connected</span>
+    </div>
 </header>
 
 <!--===============================-->
@@ -28,7 +31,7 @@
 <main>
     <!--Summaries-->
     <div class="container">
-        <div id="balance" style="font-size: 2rem; font-size: 900;">{{ balance }}</div>
+        <div id="balance" style="font-size: 2rem; font-size: 900;">${{ balance }}</div>
         <div class="row">
             <div class="col-12 col-md-3 mx-2">
                 <div class="card stat-card">
@@ -54,9 +57,6 @@
     <!--===============================-->
     <!--Portfolio Growth-->
     <!--===============================-->
-    <div class="container">
-        <div class="btn btn-primary" id="create-order-btn">Create Order</div>
-    </div>
     <div class="container">
         <div class="row">
             <div class="col-12 col-md-8">

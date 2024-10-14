@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
     const email = document.getElementById('email').textContent;
     const alertBox = document.getElementById('custom-alert');
+    const balanceElement = document.getElementById('balance');
 
     const create_order_form = document.getElementById('create_order_form');
     const all_positions_table = document.getElementById('all_positions_table');
@@ -18,7 +19,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
     order_socket.onmessage = async function(e){
         const wsMsg = JSON.parse(e.data);
-
+        console.log(wsMsg);
         if (wsMsg?.type === 'order_confirmation') {
             document.querySelector('.order-msg').textContent = wsMsg.message;
             await showAlert('Order Created');
@@ -57,6 +58,7 @@ document.addEventListener('DOMContentLoaded', function(){
             tr.appendChild(close);
 
             tbody.appendChild(tr);
+            balanceElement.textContent = `$${parseFloat(wsMsg.balance).toFixed(2)}`;
             await showAlert('Order Created', 'good');
         }
 
@@ -68,7 +70,6 @@ document.addEventListener('DOMContentLoaded', function(){
             tr.remove();
 
             // Adding to all positions table
-            await showAlert(wsMsg.reason);
             const tbody = all_positions_table.querySelector('tbody');
             tr = document.createElement('tr');
 
@@ -81,7 +82,11 @@ document.addEventListener('DOMContentLoaded', function(){
             });
             tbody.appendChild(tr);
 
+            await showAlert(wsMsg.reason);
             // Update realised pnl
+            const balanceElement = document.getElementById('balance');
+            balanceElement.textContent = parseFloat(wsMsg.balance).toFixed(2);
+            assignColor(balanceElement, false);
         }
 
         // Increasing the Unrealised Pnl Live
@@ -96,6 +101,7 @@ document.addEventListener('DOMContentLoaded', function(){
     };
 
     order_socket.onopen = function(e){
+        document.querySelector('.connect-btn').style.backgroundColor = 'green';
         console.log('Connection open');
     }
 
@@ -124,15 +130,15 @@ document.addEventListener('DOMContentLoaded', function(){
     calculateOpenSum();
 
     // Color changes for top row stats
-    function assignColor(targetStat) {
+    function assignColor(targetStat, color=true) {
         let str = '';
         let targetNum = parseFloat(targetStat.textContent);
         if (targetNum < 0){
-            targetStat.style.color ='red';
+            if (color) { targetStat.style.color ='red'; }
             str = "-$" + String(targetNum).slice(1);
         } else {
             str = "$" + targetNum;
-            targetStat.style.color = 'green';
+            if (color) { targetStat.style.color ='green'; }
         }
         targetStat.textContent = str;
     }
@@ -147,10 +153,6 @@ document.addEventListener('DOMContentLoaded', function(){
     // ----------------------------------------------
 
     // Order Card
-    document.getElementById('create-order-btn').addEventListener('click', function(){
-        document.getElementById('order-container').style.display = 'flex';
-    });
-
     document.getElementById('id_ticker').addEventListener('input', function(e){
         const inputValue = e.target.value.trim()
         if (inputValue.trim()) {

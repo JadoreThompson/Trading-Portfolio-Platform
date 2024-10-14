@@ -29,7 +29,7 @@ def dashboard(request):
     # Asset Allocation
     allocs = open_positions.values('ticker').annotate(amount=Sum('unrealised_pnl'))
     total_alloc = sum(item['amount'] for item in allocs if item['amount'])
-    asset_allocation = {item['ticker']: { 'amount': item['amount'], 'percentage': (item['amount'] / total_alloc) * 100} for item in allocs}
+    asset_allocation = {item['ticker']: { 'amount': item['amount'], 'percentage': (item['amount'] / total_alloc) * 100} for item in allocs if item.get('amount', None)}
 
     # Get distinct months from closed positions
     months = closed_positions.annotate(month=ExtractMonth('created_at')).values_list('month', flat=True).distinct()
@@ -70,7 +70,7 @@ def dashboard(request):
     for item in daily_win_rate:
         item['weekday'] = wkday_map.get(item['weekday'], 'Unknown')
 
-    daily_wins = {item['weekday']: item['total_return'] for item in daily_win_rate}
+    daily_wins = {item['weekday']: float("{:.2f}".format(item['total_return'])) for item in daily_win_rate}
 
     o = [
         {
@@ -96,7 +96,7 @@ def dashboard(request):
             and order.closed_at.month == td.month
             and order.closed_at.day == td.day
         ))),
-        'unrealised_gain': float("{:.2f}".format(sum(order.unrealised_pnl for order in open_positions))),
+        'unrealised_gain': float("{:.2f}".format(sum(order.unrealised_pnl for order in open_positions if order.unrealised_pnl))),
         'realised_gain': float("{:.2f}".format(sum(order.realised_pnl for order in closed_positions))),
         'asset_allocation': json.dumps(asset_allocation),
         'sharpe': sharpe,

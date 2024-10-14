@@ -98,7 +98,7 @@ class OrderConsumer(AsyncWebsocketConsumer):
                 return None
             user.balance -= data['dollar_amount']
             user.save()
-            return 1
+            return user.balance
 
         valid = await sync_to_async(func2)(data)
         if valid:
@@ -108,7 +108,7 @@ class OrderConsumer(AsyncWebsocketConsumer):
                 for key, v in vars(order).items()
                 if key != '_state'
             }
-            order_dict.update({'topic': 'order_created'})
+            order_dict.update({'topic': 'order_created', 'balance': valid})
             await self.send(json.dumps(order_dict))
             return None
         else:

@@ -67,8 +67,13 @@ async def close(order, close_price, amount):
             order.unrealised_pnl = 0.0
             print(f"[CLOSE][EVENT] >>> Closing Order: {order.order_id}")
             order.save()
+            return user.balance
+        else:
+            return None
 
-    await sync_to_async(func)(order, close_price, amount)
+    balance = await sync_to_async(func)(order, close_price, amount)
+    if balance:
+        return balance
     return None
 
 
@@ -156,17 +161,19 @@ async def close_position(order: Orders, close_price: int | float, amount, reason
             if k == '_state': del message[k]
         return message
 
-    await close(order, close_price, amount)
-
-    message = await sync_to_async(func)()
-    channel_layer = get_channel_layer()
-    await channel_layer.group_send(
-        f"orders-{order.user_id.split('@')[0]}",
-        {
-            'type': 'position_closed',
-            'message': message
-        }
-    )
+    # Close and send to user
+    balance = await close(order, close_price, amount)
+    if balance:
+        message = await sync_to_async(func)()
+        message['balance'] = balance
+        channel_layer = get_channel_layer()
+        await channel_layer.group_send(
+            f"orders-{order.user_id.split('@')[0]}",
+            {
+                'type': 'position_closed',
+                'message': message
+            }
+        )
 
 
 async def send_position_update(order, current_price: int | float, amount):
