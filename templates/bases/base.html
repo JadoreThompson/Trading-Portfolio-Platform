@@ -16,6 +16,17 @@
 
     {% block stylesheet %}{% endblock %}
     <title>{% block title %}{% endblock %}</title>
+
+    <style>
+        .watchlist-item {
+            color: var(--text-color);
+            text-decoration: none;
+            height: 0;
+        }
+        .watchlist-item:hover {
+            filter: brightness(5%);
+        }
+    </style>
 </head>
 <body>
 {% block content %}{% endblock %}

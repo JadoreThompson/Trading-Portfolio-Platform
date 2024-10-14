@@ -1,0 +1,46 @@
+{% extends 'bases/base.html' %}
+{% load static %}
+
+{% block stylesheet %}{% endblock %}
+{% block title %}{% endblock %}
+
+
+{% block content %}
+<header style="border-bottom: 1px solid black; display: flex; align-items: center;">
+    <div id="email" class="btn">{{ email }}</div>
+    <div class="conn-status" style="display: flex; align-items: center;">
+        <span style="margin-right: 0.5rem;" class="dot connect-btn"></span>
+        <span>Connected</span>
+    </div>
+</header>
+
+
+<!--===============================-->
+<!--Main Content-->
+<!--===============================-->
+<main style="display: flex; flex-direction: row;">
+
+    <!------------------------------------------------------->
+                                        <!--Sidebar-->
+    <!------------------------------------------------------->
+    <div class="p-0" style="width: 5rem; min-height: 100%; border-right:1px solid #575756;">
+        <div class="container d-flex flex-row m-0 p-0" style="width: 100%; height: 100%;">
+            <div class="sidebar-btn-container side-topic">
+                <button class="btn side-btn" title="watchlist" onclick="showWatchlist()">
+                    <i class="fa-regular fa-eye"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="watchlist-container container pt-10 side-topic" style="margin-left: 0; background-color: #e8e8e8; display: none; max-width: 6rem;">
+        <a href="/watchlist/?q=btcusdt" class="watchlist-item">BTCUSDT</a>
+    </div>
+
+    {% block inner_content %}
+    {% endblock %}
+
+</main>
+{% endblock %}
+
+{% block javascript %}
+{% endblock %}

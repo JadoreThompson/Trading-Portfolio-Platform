@@ -246,3 +246,14 @@ button.btn.growth-interval-button {
     color: #5091d4 !important;
     margin-right: 0.5rem;
 }
+
+
+/* -------------------------------------------------- */
+/* Sidebar */
+/* -------------------------------------------------- */
+.side-topic {
+    padding-top: 3rem;
+}
+.watchlist-item {
+    color: var(--text-color);
+}

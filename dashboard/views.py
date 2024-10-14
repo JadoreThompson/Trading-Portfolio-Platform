@@ -106,7 +106,7 @@ def dashboard(request):
         'sharpe': sharpe,
         'sortino': sortino,
         'average_daily_return': float("{:.2f}".format(average_daily_return['realised_pnl__avg'])),
-        'win_rate': win_rate,
+        'win_rate': float("{:.3f}".format(win_rate)),
         'volume': sum(order.dollar_amount for order in closed_positions),
         'daily_wins': daily_wins,
         'balance_growth': json.dumps(balance_growth)

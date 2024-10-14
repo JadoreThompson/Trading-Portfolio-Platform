@@ -268,7 +268,6 @@ document.addEventListener('DOMContentLoaded', function(){
 
     async function getInterval(interval){
         const rsp = await fetch(`${growthIntervalUrl}/?interval=${interval}`);
-//        let data = await rsp.json();
         return await rsp.json();
     }
 
