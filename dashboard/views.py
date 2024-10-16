@@ -1,6 +1,8 @@
 import json
+import os
 import uuid
 from datetime import datetime, timedelta
+import requests
 
 # Local
 from .forms import CreateOrderForm
@@ -18,6 +20,14 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
 
+CC_HEADER = {
+    'Authorization': f'Bearer: {os.getenv('CC_DATA_API_KEY')}'
+}
+
+
+# ---------------------------------------------------------------
+# ALL THE DASHBOARD RELATED FUNCTIONS AND ENDPOINTS
+# ---------------------------------------------------------------
 @login_required
 def dashboard(request):
     td = datetime.now()
@@ -71,12 +81,11 @@ def dashboard(request):
         5: 'Thursday', 6: 'Friday', 7: 'Saturday', 8: 'Sunday'
     }
 
-    daily_wins = {wkday_map.get(item['weekday'], 'Unknown'): float("{:.2f}".format(item['total_return'])) for item in
+    daily_wins = {wkday_map.get(item['weekday'], 'Unknown'): round(item['total_return']) for item in
                   daily_pnl}
 
     balance_growth = {str((td - timedelta(days=item['weekday'])).date()): item['total_return'] for item in daily_pnl}
-    balance_growth['starting_balance'] = float(
-        "{:.2f}".format(request.user.balance + sum(daily_wins[key] for key in daily_wins)))
+    balance_growth['starting_balance'] = round(request.user.balance + sum(daily_wins[key] for key in daily_wins), 2)
 
     open_pos = [
         {
@@ -89,24 +98,23 @@ def dashboard(request):
     return render(request, "dashboard/dashboard.html", {
         'create_order_form': CreateOrderForm(),
         'email': request.user.email,
-        'balance': float("{:.2f}".format(request.user.balance)),
+        'balance': round(request.user.balance, 2),
         'open_positions': open_pos,
         'open_js': json.dumps(open_pos),
         'closed_positions': closed_positions,
-        'day_change': float("{:.2f}".format(sum(
+        'day_change': round(sum(
             order.realised_pnl for order in closed_positions if
             order.closed_at.year == td.year
             and order.closed_at.month == td.month
             and order.closed_at.day == td.day
-        ))),
-        'unrealised_gain': float(
-            "{:.2f}".format(sum(order.unrealised_pnl for order in open_positions if order.unrealised_pnl))),
-        'realised_gain': float("{:.2f}".format(sum(order.realised_pnl for order in closed_positions))),
+        ), 2),
+        'unrealised_gain': round(sum(order.unrealised_pnl for order in open_positions if order.unrealised_pnl), 2),
+        'realised_gain': round(sum(order.realised_pnl for order in closed_positions), 2),
         'asset_allocation': json.dumps(asset_allocation),
         'sharpe': sharpe,
         'sortino': sortino,
-        'average_daily_return': float("{:.2f}".format(average_daily_return['realised_pnl__avg'])),
-        'win_rate': float("{:.3f}".format(win_rate)),
+        'average_daily_return': round(average_daily_return['realised_pnl__avg'], 2),
+        'win_rate': round(win_rate, 2),
         'volume': sum(order.dollar_amount for order in closed_positions),
         'daily_wins': daily_wins,
         'balance_growth': json.dumps(balance_growth)
@@ -185,3 +193,44 @@ def get_growth(request):
         print(json.dumps(data, indent=4))
         return JsonResponse(status=200, data=data)
     return JsonResponse(status=400, data={'error': 'bad request'})
+
+
+# ---------------------------------------------------------------
+#                                   ALL WATCHLIST RELATED
+# ---------------------------------------------------------------
+def currency_data(symbol):
+    """
+    Returns a dictionary of data points for the symbol. This is not a view function
+    :param symbol:
+    :return:
+    """
+    r = requests.get(
+        f'https://data-api.cryptocompare.com/index/cc/v1/latest/tick?market=cadli&instruments={symbol}&apply_mapping=true',
+        headers=CC_HEADER
+    )
+    cols = [
+        'CURRENT_DAY_QUOTE_VOLUME', 'CURRENT_DAY_OPEN', 'CURRENT_DAY_HIGH',
+        'CURRENT_DAY_LOW', 'CURRENT_WEEK_LOW', 'CURRENT_WEEK_OPEN', 'CURRENT_WEEK_HIGH',
+        'CURRENT_WEEK_QUOTE_VOLUME'
+    ]
+    return {key.lower(): round(value, 2) for key, value in r.json()['Data'][symbol].items() if key in cols}
+
+
+@login_required
+def get_watchlist(request):
+    symbol = request.GET.get('q')
+    cc_data = currency_data(symbol)
+    print(json.dumps(cc_data, indent=4))
+    return render(request, 'dashboard/watchlist.html', {
+        'symbol': symbol,
+        'email': request.user.email,
+        'cc_data': cc_data
+    })
+
+
+def get_currency_data(request):
+    if request.method == 'GET':
+        data = currency_data(request.GET.get('q'))
+        return JsonResponse(status=200, data=data)
+    else:
+        return JsonResponse(status=400, data={'error': 'Invalid request type'})

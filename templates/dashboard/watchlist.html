@@ -1,0 +1,123 @@
+{% extends 'bases/sidebar_base.html' %}
+{% load static %}
+
+{% block stylesheet %}
+
+{% endblock %}
+{% block title %}Watchlist{% endblock %}
+
+
+{% block inner_content %}
+<div class="container" style="height: 100vh;">
+  <div class="chart-container container" style="height: 60vh;">
+    <!-- TradingView Widget BEGIN -->
+    <div class="tradingview-widget-container" style="height:100%;width:100%">
+      <div class="tradingview-widget-container__widget" style="height:calc(100% - 32px);width:100%"></div>
+      <div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank"><span class="blue-text">Track all markets on TradingView</span></a></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>
+      {
+      "autosize": true,
+      "symbol": "NASDAQ:AAPL",
+      "interval": "D",
+      "timezone": "Etc/UTC",
+      "theme": "light",
+      "style": "1",
+      "locale": "en",
+      "allow_symbol_change": true,
+      "calendar": false,
+      "support_host": "https://www.tradingview.com"
+    }
+      </script>
+    </div>
+    <!-- TradingView Widget END -->
+      </div>
+
+  <style>
+    .stat {
+      display:flex;
+      justify-content: space-between;
+      align-items: center;
+      border: none;
+      border-bottom: dashed;
+      border-bottom-width: 0.15rem;
+      border-bottom-color: grey;
+      margin: 0;
+      padding: 0.5rem;
+    }
+    .stat span{
+      font-size: 1rem;
+    }
+  </style>
+  <div class="chart-stat-container" style="height: 5rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+    <div class="stat">
+      <span>Volume(24)</span><span>{{ cc_data.current_day_quote_volume }}</span>
+    </div>
+    <div class="stat">
+      <span>Open(24h)</span><span>{{ cc_data.current_day_open }}</span>
+    </div>
+    <div class="stat">
+      <span>Low(24h)</span><span>{{ cc_data.current_day_low }}</span>
+    </div>
+    <div class="stat">
+      <span>High(24h)</span><span>{{ cc_data.current_day_high }}</span>
+    </div>
+    <div class="stat">
+      <span>Volume(week)</span><span>{{ cc_data.current_week_quote_volume }}</span>
+    </div>
+    <div class="stat">
+      <span>Open(week)</span><span>{{ cc_data.current_week_open }}</span>
+    </div>
+    <div class="stat">
+      <span>Low(week)</span><span>{{ cc_data.current_week_high }}</span>
+    </div>
+    <div class="stat">
+      <span>High(week)</span><span>{{ cc_data.current_week_high }}</span>
+    </div>
+  </div>
+
+  <style>
+    .progress {
+      height: 100%;
+    }
+    .bearish {
+      background-color: #eb4034 !important;
+    }
+    .bullish {
+      background-color: #64a15c;
+    }
+  </style>
+  <div class="machine-learning-container container" style="margin-top: 3rem;">
+    <span>Machine learning statistics</span>
+    <div class="card ml-card sentiment-card">
+      <div class="card-body">
+            <div class="progress-stacked mb-3 rounded-1" style="height: 25px;">
+              <div class="progress" style="width: 75%" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+                <div class="bullish progress-bar bg-progress-gradient border-end border-100 border-2"></div>
+              </div>
+              <div class="progress" style="width: 25%" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+                <div class="progress-bar bearish bg-process-gradient border-end border-100 border-2"></div>
+              </div>
+            </div>
+        <div class="row fs-10 fw-semi-bold text-500 g-0">
+          <div class="col-auto d-flex align-items-center pe-3">
+            <span class="dot bullish"></span>
+            <span>Bullish</span>
+          </div>
+          <div class="col-auto d-flex align-items-center pe-3">
+            <span class="dot bearish"></span>
+            <span>Bearish</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="new-container container" style="margin-top: 10px;">
+    <div class="card">for all the news</div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script src="{% static 'js/waitlist.js' %}"></script>
+{% endblock %}
