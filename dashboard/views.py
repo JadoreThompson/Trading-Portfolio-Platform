@@ -198,7 +198,7 @@ def get_growth(request):
 # ---------------------------------------------------------------
 #                                   ALL WATCHLIST RELATED
 # ---------------------------------------------------------------
-def currency_data(symbol):
+def currency_stats(symbol):
     """
     Returns a dictionary of data points for the symbol. This is not a view function
     :param symbol:
@@ -218,19 +218,25 @@ def currency_data(symbol):
 
 @login_required
 def get_watchlist(request):
-    symbol = request.GET.get('q')
-    cc_data = currency_data(symbol)
-    print(json.dumps(cc_data, indent=4))
-    return render(request, 'dashboard/watchlist.html', {
-        'symbol': symbol,
-        'email': request.user.email,
-        'cc_data': cc_data
-    })
+    try:
+        symbol = request.GET.get('q')
+        cc_data = currency_stats(symbol)
+        r = requests.get(f'http://127.0.0.1:8080/sentiment?currency={symbol.split("-")[0]}')
+        sentiment = r.json()
+
+        return render(request, 'dashboard/watchlist.html', {
+            'symbol': symbol,
+            'email': request.user.email,
+            'cc_data': cc_data,
+            'sentiment': sentiment
+        })
+    except Exception as e:
+        print(type(e), str(e))
 
 
 def get_currency_data(request):
     if request.method == 'GET':
-        data = currency_data(request.GET.get('q'))
+        data = currency_stats(request.GET.get('q'))
         return JsonResponse(status=200, data=data)
     else:
         return JsonResponse(status=400, data={'error': 'Invalid request type'})

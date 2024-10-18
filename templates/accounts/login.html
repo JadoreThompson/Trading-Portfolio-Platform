@@ -1,22 +1,33 @@
 {% extends 'bases/base.html' %}
 {% load static %}
 
-{% block stylesheet %}{% endblock %}
+{% block stylesheet %}
+<link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+{% endblock %}
 {% block title %}Login{% endblock %}
 
 
 {% block content %}
-<main class="auth-main">
-    <div class="container d-flex align-items-center justify-content-center">
+<main class="auth-main" style="height: 100vh;">
+    <div class="container d-flex align-items-center justify-content-center" style="height: 100%;">
         <div class="card auth-card">
-            <div class="card-title">
+            <div class="card-title m-1">
                 <h1>Login</h1>
             </div>
             <div class="card-body">
                 <form action="{% url 'login' %}" method="post">
                     {% csrf_token %}
-                    {{ form }}
-                    <input type="submit" value="Submit">
+                    <div class="col mb-3">
+                        <label for="email">Email</label><br>
+                        <input type="email" name="email" id="email" required>
+                    </div>
+                    <div class="col mb-3">
+                        <label for="password">Password</label><br>
+                        <input type="password" name="password" id="password" required>
+                    </div>
+                    <div class="col mb-3 d-flex justify-content-center align-items-center">
+                        <input class="submit-btn" type="submit" value="Submit" style="width: 100%;">
+                    </div>
                 </form>
                 {% for mesage in messages %}
                     <span>{{ message }}</span>

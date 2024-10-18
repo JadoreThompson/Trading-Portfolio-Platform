@@ -1,0 +1,9 @@
+.card-title {
+    text-align: center;
+}
+.submit-btn {
+    color: white;
+    border-radius: 0.25rem;
+    border: none;
+    background-color: #5091D4;
+}

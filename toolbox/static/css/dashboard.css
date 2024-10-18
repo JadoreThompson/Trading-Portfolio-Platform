@@ -70,7 +70,9 @@ input:focus {
         opacity: 0;
     }
 }
-
+#alertMessage {
+    color: white;
+}
 /*Statistic Card*/
 .stat-card {
     border: 0px;
