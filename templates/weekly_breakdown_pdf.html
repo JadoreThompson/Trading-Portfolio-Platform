@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Trading Report</title>
+</head>
+<body>
+    <header style="text-align:center;">
+        <h1>Weekly Breakdown</h1>
+    </header>
+
+    <table width="100%" style="margin-bottom: 20px;">
+        <tr>
+            <td style="text-align: left;">User: {{ user }}</td>
+            <td style="text-align: right;">Date: {{ date }}</td>
+        </tr>
+    </table>
+
+    <!---------------------------------->
+    <!-- Tables -->
+    <!---------------------------------->
+
+    <!-------------Closed Orders--------------------->
+    <div class="container" style="margin: 20px 0;">
+        <h2>Closed Orders</h2>
+        <table border="1" cellpadding="10" cellspacing="0" width="100%" style="border-collapse: collapse; text-align: left;">
+            <thead>
+            <tr style="background-color: #f4f4f4;">
+                <th>Symbol</th>
+                <th>Open Time</th>
+                <th>Open Price</th>
+                <th>Closed Price</th>
+                <th>Close Time</th>
+                <th>Realized PnL</th>
+                <th>Position Size</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for trade in closed_trades %}
+                <tr>
+                    <td>{{ trade.ticker }}</td>
+                    <td>{{ trade.created_at }}</td>
+                    <td>{{ trade.open_price }}</td>
+                    <td>{{ trade.close_price }}</td>
+                    <td>{{ trade.close_time }}</td>
+                    <td>{{ trade.realised_pnl }}</td>
+                    <td>{{ trade.dollar_amount }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!---------------Open Orders------------------->
+    <div class="container" style="margin: 20px 0;">
+        <h2>Open Orders</h2>
+        <table border="1" cellpadding="10" cellspacing="0" width="100%" style="border-collapse: collapse; text-align: left;">
+            <thead>
+            <tr style="background-color: #f4f4f4;">
+                <th>Symbol</th>
+                <th>Open Time</th>
+                <th>Open Price</th>
+                <th>Position Size</th>
+                <th>Unrealized PnL</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for trade in open_trades %}
+                <tr>
+                    <td>{{ trade.ticker }}</td>
+                    <td>{{ trade.created_at }}</td>
+                    <td>{{ trade.open_price }}</td>
+                    <td>{{ trade.dollar_amount }}</td>
+                    <td>{{ trade.unrealised_pnl }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <footer style="text-align: center; padding: 20px;">
+        <p>This is an automated email, please do not reply.</p>
+        <p><a href="#">Unsubscribe</a></p>
+    </footer>
+</body>
+</html>

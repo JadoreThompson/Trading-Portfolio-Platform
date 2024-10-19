@@ -7,7 +7,7 @@ import redis
 from datetime import datetime
 
 # Local
-from .tasks import send_order_email
+from .tasks import send_email
 from dashboard.models import Orders
 
 # Django
@@ -170,7 +170,7 @@ async def close_position(order: Orders, close_price: int | float, amount, reason
     if balance:
         message = await sync_to_async(func)()
         message['balance'] = balance
-        send_order_email.delay('order_created', 'a new order was created', order.user_id)
+        send_email.delay('order_created', 'a new order was created', order.user_id)
         channel_layer = get_channel_layer()
         await channel_layer.group_send(
             f"orders-{order.user_id.split('@')[0]}",

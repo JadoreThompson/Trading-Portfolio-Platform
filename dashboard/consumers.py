@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 from channels.generic.websocket import AsyncWebsocketConsumer
 
 # Local
-from .tasks import send_order_email
+from .tasks import send_email
 from .price_updater import redis_client, close_position, fetch_price
 from .models import Orders
 
@@ -112,7 +112,7 @@ class OrderConsumer(AsyncWebsocketConsumer):
             }
             order_dict.update({'topic': 'order_created', 'balance': valid})
             await self.send(json.dumps(order_dict))
-            send_order_email.delay('Order Created', 'A new order was created', data['user_id'])
+            send_email.delay('Order Created', 'A new order was created', data['user_id'])
             return None
         else:
             await self.send(json.dumps({'type': 'insufficient_balance', 'message': 'Insufficient funds'}))

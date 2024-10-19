@@ -15,7 +15,7 @@
                 <h1>Register</h1>
             </div>
             <div class="card-body">
-                <form action="{% url 'login' %}" method="post">
+                <form action="{% url 'register' %}" method="post">
                     {% csrf_token %}
                     <div class="col mb-3">
                         <label for="email">Email</label><br>

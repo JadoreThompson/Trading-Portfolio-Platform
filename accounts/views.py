@@ -49,6 +49,8 @@ class RegisterView(View):
             new_user = User.objects.create_user(**data)
             login(request, new_user)
             messages.success(request, 'User crested successfully')
+            from dashboard.tasks import schedule_weekly_pdf
+            schedule_weekly_pdf(new_user.email)
             return redirect('dashboard')
 
         except IntegrityError:

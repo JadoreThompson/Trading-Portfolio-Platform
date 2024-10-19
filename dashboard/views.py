@@ -113,7 +113,8 @@ def dashboard(request):
         'asset_allocation': json.dumps(asset_allocation),
         'sharpe': sharpe,
         'sortino': sortino,
-        'average_daily_return': round(average_daily_return['realised_pnl__avg'], 2),
+        'average_daily_return': round(average_daily_return['realised_pnl__avg'], 2)
+        if average_daily_return['realised_pnl__avg'] else 0,
         'win_rate': round(win_rate, 2),
         'volume': sum(order.dollar_amount for order in closed_positions),
         'daily_wins': daily_wins,
