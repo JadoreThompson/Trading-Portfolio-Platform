@@ -2,13 +2,15 @@ import json
 import uuid
 from datetime import datetime
 
+# Django
 from asgiref.sync import sync_to_async
 from django.contrib.auth import get_user_model
+from channels.generic.websocket import AsyncWebsocketConsumer
 
+# Local
+from .tasks import send_order_email
 from .price_updater import redis_client, close_position, fetch_price
 from .models import Orders
-
-from channels.generic.websocket import AsyncWebsocketConsumer
 
 
 User = get_user_model()
@@ -38,7 +40,6 @@ class OrderConsumer(AsyncWebsocketConsumer):
 
         # Adding this specific channel to a group
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-        print(comment.format(topic='CONNECTED', message=f'Successfully connected to client, Group: {self.room_group_name}'))
 
     async def disconnect(self, code):
         """
@@ -47,7 +48,6 @@ class OrderConsumer(AsyncWebsocketConsumer):
         Discards the channel from the group and logs the disconnection.
         """
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
-        print(comment.format(topic='DISCONNECT', message=f"Disconnected from client with code: {code}"))
 
     async def receive(self, text_data=None, bytes_data=None):
         """
@@ -59,11 +59,9 @@ class OrderConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         if 'dollar_amount' in data:
             data['dollar_amount'] = float(data['dollar_amount'])
-        print(comment.format(topic='MESSAGE', message=f'Received message from client: {json.dumps(data)}'))
 
         if data['action'] == 'open':
             await self.create_order(data)
-            print(comment.format(topic='SUCCESS', message='Successfully sent order creation confirmation'))
         if data['action'] == 'close':
             order = await self.close_user_position(data)
             # await self.send(json.dumps({'type': 'close_order_confirmation'}.update(vars(order))))
@@ -114,6 +112,7 @@ class OrderConsumer(AsyncWebsocketConsumer):
             }
             order_dict.update({'topic': 'order_created', 'balance': valid})
             await self.send(json.dumps(order_dict))
+            send_order_email.delay('Order Created', 'A new order was created', data['user_id'])
             return None
         else:
             await self.send(json.dumps({'type': 'insufficient_balance', 'message': 'Insufficient funds'}))

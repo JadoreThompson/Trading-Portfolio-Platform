@@ -221,17 +221,23 @@ def get_watchlist(request):
     try:
         symbol = request.GET.get('q')
         cc_data = currency_stats(symbol)
-        r = requests.get(f'http://127.0.0.1:8080/sentiment?currency={symbol.split("-")[0]}')
-        sentiment = r.json()
+
+        try:
+            sentiment = json.loads(redis_client.get(symbol.split("-")[0]).decode())
+        except AttributeError:
+            r = requests.get(f'http://127.0.0.1:80/sentiment?currency={symbol.split("-")[0]}')
+            sentiment = r.json()
+            redis_client.set(symbol.split("-")[0], json.dumps(sentiment))
+        print("sentimnet: ", sentiment)
 
         return render(request, 'dashboard/watchlist.html', {
             'symbol': symbol,
             'email': request.user.email,
             'cc_data': cc_data,
-            'sentiment': sentiment
+            'sentiment': json.dumps(sentiment)
         })
     except Exception as e:
-        print(type(e), str(e))
+        print(type(e), str(e), end=f"\n{"-" * 10}\n")
 
 
 def get_currency_data(request):

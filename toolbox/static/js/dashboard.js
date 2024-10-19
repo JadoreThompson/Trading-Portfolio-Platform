@@ -19,7 +19,6 @@ document.addEventListener('DOMContentLoaded', function(){
 
     order_socket.onmessage = async function(e){
         const wsMsg = JSON.parse(e.data);
-        console.log(wsMsg);
         if (wsMsg?.type === 'order_confirmation') {
             document.querySelector('.order-msg').textContent = wsMsg.message;
             await showAlert('Order Created');
@@ -93,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function(){
             let num = Number(parseFloat(realisedSpan.textContent.replace('$', '')).toFixed(2));
             num = num + wsMsg.amount;
             realisedSpan.textContent = num;
-            console.log(realisedSpan);
+            console.log(num);
             assignColor(realisedSpan);
         }
 
@@ -110,7 +109,6 @@ document.addEventListener('DOMContentLoaded', function(){
 
     order_socket.onopen = function(e){
         document.querySelector('.connect-btn').style.backgroundColor = '#037B66';
-        console.log('Connection open');
     }
     order_socket.onclose = function(e) {
         document.querySelector('.connect-btn').style.backgroundColor = '#D60A22';
@@ -126,7 +124,6 @@ document.addEventListener('DOMContentLoaded', function(){
     function calculateOpenSum() {
         let sum = Object.values(openObject).reduce((sum, value) => sum + value, 0).toFixed(2);
         let ugElement = document.querySelector('.ug').querySelector('span');
-        console.log('Open sum called');
         sum = Object.values(openObject).reduce((sum, value) => sum + value, 0).toFixed(2);
         let str = '';
         if (sum < 0) {

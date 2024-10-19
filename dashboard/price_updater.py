@@ -5,11 +5,16 @@ import uuid
 import ccxt
 import redis
 from datetime import datetime
+
+# Local
+from .tasks import send_order_email
 from dashboard.models import Orders
 
+# Django
 from django.contrib.auth import get_user_model
 from asgiref.sync import sync_to_async
 from channels.layers import get_channel_layer
+
 
 Users = get_user_model()
 redis_client = redis.Redis(host='localhost', port=6379, db=0)
@@ -65,7 +70,6 @@ async def close(order, close_price, amount):
             order.closed_at = datetime.now()
             order.realised_pnl = float("{:.2f}".format(order.dollar_amount - (order.dollar_amount - amount)))
             order.unrealised_pnl = 0.0
-            print(f"[CLOSE][EVENT] >>> Closing Order: {order.order_id}")
             order.save()
             return user.balance
         else:
@@ -166,6 +170,7 @@ async def close_position(order: Orders, close_price: int | float, amount, reason
     if balance:
         message = await sync_to_async(func)()
         message['balance'] = balance
+        send_order_email.delay('order_created', 'a new order was created', order.user_id)
         channel_layer = get_channel_layer()
         await channel_layer.group_send(
             f"orders-{order.user_id.split('@')[0]}",
@@ -184,7 +189,6 @@ async def send_position_update(order, current_price: int | float, amount):
     :param current_price: The latest price for the ticker.
     :param amount: The updated amount (equity) of the position.
     """
-    print(f"[SEND POSITION UPDATE] >> Order: {order.order_id}")
     channel_layer = get_channel_layer()
     await channel_layer.group_send(
         f"orders-{order.user_id.split('@')[0]}",
