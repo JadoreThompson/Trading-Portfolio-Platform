@@ -18,13 +18,21 @@
     <title>{% block title %}{% endblock %}</title>
 
     <style>
-        .watchlist-item {
-            color: var(--text-color);
-            text-decoration: none;
-            height: 0;
+        .btn-primary {
+            background-color: #5091D4;
+            border: none !important;
         }
-        .watchlist-item:hover {
-            filter: brightness(5%);
+        .btn-primary:hover {
+            background-color: #5083d4;
+        }
+        .btn-secondary {
+            background-color: white;
+            border: 1px solid #5091D4 !important;
+            color: #5091D4;
+        }
+        .btn-secondary {
+            background-color: white !important;
+            color: #5091D4 !important;
         }
 
         .dot {

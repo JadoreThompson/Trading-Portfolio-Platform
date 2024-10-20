@@ -1,0 +1,37 @@
+{% extends 'bases/base.html' %}
+{% load static %}
+
+{% block stylesheet %}{% endblock %}
+{% block title %}Tradey{% endblock %}
+
+
+{% block content %}
+<style>
+    body {
+        background-color: white;
+    }
+    .btn {
+        border: 1px solid black;
+    }
+</style>
+<main class="landing-screen" role="main" style="margin: 0; height: 100vh; display: flex;">
+    <div class="container row"
+         style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
+          box-sizing: border-box; text-align: left;">
+        <div class="col-6">
+            <h1 style="font-size: 3.5rem;">Rise to the top, building your portfolio one step at a time</h1>
+            <span style="font-size: 1.2rem; color: #5e666e;">Trade and stay up to date with CryptoCurrency</span>
+            <div class="btn-container" style="margin: 0; padding: 1rem;">
+                <a href="/accounts/register" class="btn btn-primary">Get Started</a>
+                <a href="/dashboard" class="btn btn-secondary">Dashboard</a>
+            </div>
+        </div>
+        <div class="col-6" style="padding: 0; max-height: 100%; max-width: 100%;;">
+            <img style="margin: 0; padding: 0; height: 100%; width: 100%;" src="{% static 'images/COMPUT_1.png' %}" alt="">
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block javascript %}
+{% endblock %}
