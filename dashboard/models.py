@@ -16,3 +16,17 @@ class Orders(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     closed_at = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField()
+
+
+class Watchlist(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    ticker = models.CharField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'ticker'], name='unique_user_ticker')
+        ]
+
+    def __str__(self):
+        return f'{self.user.email} - {self.ticker}'
+

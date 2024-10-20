@@ -87,8 +87,10 @@ class EmailConfirmationView(View):
             token_row.delete()
             login(request, user)
             return JsonResponse(status=200, data={'message': 'Successfully confirmed email'})
+        except EmailConfirmTokens.DoesNotExist:
+            return JsonResponse(status=404, data={'error': 'Invalid token'})
         except Exception as e:
-            print(str(e))
+            print(str(e), type(e))
             return JsonResponse(status=500, data={'error': 'An error occurred'})
 
 

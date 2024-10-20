@@ -47,7 +47,16 @@
         text-decoration: none;
         border-radius: 0.2rem;
     }
-    .watchlist-items a:hover {
+    .watchlist-items a:hover,
+    .watchlist-items a:hover i {
+        background-color: #DCEAF7;
+        color: #5091D4;
+    }
+    .inter {
+        border-radius: 0.2rem;
+        padding: 0.1rem;
+    }
+    .inter:hover {
         background-color: #DCEAF7;
         color: #5091D4;
     }
@@ -62,8 +71,16 @@
         <div class="watchlist">
             <button class="btn nav-btn watchlist-btn">Watchlist</button>
             <div class="watchlist-items">
-                <a href="/dashboard/watchlist/?q=BTC-USDT">BTC-USDT</a>
-                <a href="/dashboard/watchlist?q=ETH-USDT">ETH-USDT</a>
+                <a href="#"
+                   onclick="event.preventDefault();
+                   document.getElementById('watchlist-add-overlay').style.display='flex';
+                    document.querySelector('header').style.display = 'none';">
+                    <i class="fa-solid fa-circle-plus mr-3"></i>
+                    <span>Add</span>
+                </a>
+                {% for item in watchlist %}
+                    <a href="/dashboard/watchlist/?q={{ item.ticker }}">{{ item.ticker }}</a>
+                {% endfor %}
             </div>
         </div>
     </div>
@@ -75,8 +92,78 @@
         </div>
     </div>
 </header>
+
+<style>
+    .ticker {
+        margin-top: 0.5rem;
+    }
+</style>
+
+<div class="container" id="watchlist-add-overlay"
+     style="height: 100vh; min-width: 100%; background-color: rgba(0, 0, 0, 0.5); position: fixed;
+        left: 0; right: 0; z-index: 1; display: none;">
+    <div class="container"
+        style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
+        display: flex; flex-direction: column; align-items: center; text-align: center; justify-content: center;
+        ">
+        <div class="container" style="background-color: white; width: 70%; padding-top: 1rem; padding-bottom: 1rem;
+        border-radius: 0.2rem;">
+            <i class="fa-regular fa-circle-xmark"
+               onclick="document.querySelector('header').style.display='flex';
+                document.getElementById('watchlist-add-overlay').style.display='none';
+                "></i>
+            <input id="watchlist-input" type="text" style="width: 100%; outline: none; background-color: white;
+                border: none; border-bottom: 1px solid black;">
+            <div class="tickers" id="tickers"
+                 style="display: flex; flex-direction: column; width: 100%; text-align: left; justify-content: flex-start;">
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('watchlist-input').addEventListener('input', function(e){
+            const inputValue = e.target.value.trim();
+            if (inputValue) {
+                fetch(`/dashboard/tickers/?q=${inputValue}`)
+                .then(response => response.json())
+                .then(data => {
+                    const allTickersDiv = document.getElementById('tickers');
+                    allTickersDiv.innerHTML = "";
+                    if (data.length > 0) {
+                        allTickersDiv.style.display = 'flex';
+                        data.forEach(item => {
+                            const div = document.createElement('div');
+                            div.classList.add("ticker", "inter");
+                            div.textContent = item;
+                            allTickersDiv.appendChild(div);
+                        });
+
+                        document.querySelectorAll('.ticker').forEach(t => {
+                            t.addEventListener('click', function() {
+                                fetch('/dashboard/add-watchlist', {
+                                    method: 'POST',
+                                    body: JSON.stringify({ticker: t.textContent})
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    console.log(data);
+                                    // show a little overlay that it's added or give it a green backgrond
+                                })
+                                .catch(e => {
+                                    console.error(e.message);
+                                });
+                            });
+                        });
+                    }
+                });
+            }
+        });
+    });
+</script>
 {% block main_content %}
 {% endblock %}
+
 {% endblock %}
 
 {% block javascript %}

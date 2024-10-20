@@ -2,18 +2,20 @@ import json
 import os
 import uuid
 from datetime import datetime, timedelta
+
+import django.db.utils
 import requests
 from urllib.parse import quote
 
 # Local
 from .forms import CreateOrderForm
-from .models import Orders
+from .models import Orders, Watchlist
 from .formulas import sharpe_ratio, sortino_ratio, sharpe_std
 
 # Django
 from django.db.models import Case, When, Count, Avg
 from django.db.models.functions import ExtractMonth, ExtractWeekDay, Trunc
-
+from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from django.db.models import Sum
 from django.shortcuts import render
@@ -95,6 +97,8 @@ def dashboard(request):
         for order in [vars(order) for order in open_positions]
     ]
 
+    print(Watchlist.objects.filter(user=request.user))
+
     return render(request, "dashboard/dashboard.html", {
         'create_order_form': CreateOrderForm(),
         'email': request.user.email,
@@ -118,7 +122,8 @@ def dashboard(request):
         'win_rate': round(win_rate, 2),
         'volume': sum(order.dollar_amount for order in closed_positions),
         'daily_wins': daily_wins,
-        'balance_growth': json.dumps(balance_growth)
+        'balance_growth': json.dumps(balance_growth),
+        'watchlist': Watchlist.objects.filter(user=request.user)
     })
 
 
@@ -244,7 +249,8 @@ def get_watchlist(request):
             'symbol': currency,
             'email': request.user.email,
             'cc_data': currency_statistics,
-            'articles': articles
+            'articles': articles,
+            'watchlist': Watchlist.objects.filter(user=request.user)
         })
     except Exception as e:
         print(type(e), str(e), end=f"\n{"-" * 10}\n")
@@ -256,3 +262,19 @@ def get_currency_data(request):
         return JsonResponse(status=200, data=data)
     else:
         return JsonResponse(status=400, data={'error': 'Invalid request type'})
+
+
+@csrf_exempt
+def add_to_watchlist(request):
+    if request.method != 'POST':
+        return JsonResponse(status=400, data={'error': 'Invalid request type'})
+
+    try:
+        body = json.loads(request.body)
+        Watchlist.objects.create(user=request.user, ticker=body['ticker'].replace("/", "-"))
+        return JsonResponse(status=200, data={'message': 'Successfully added to watchlist'})
+    except django.db.utils.IntegrityError:
+        return JsonResponse(status=200, data={'message': 'Item already in watchlist'})
+    except Exception as e:
+        print(type(e), str(e))
+        return JsonResponse(status=500, data={'error': 'Something went wrong'})
