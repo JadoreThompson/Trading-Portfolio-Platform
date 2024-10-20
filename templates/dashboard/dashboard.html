@@ -1,4 +1,4 @@
-{% extends 'bases/sidebar_base.html' %}
+{% extends 'bases/dashboard_base.html' %}
 {% load static %}
 
 {% block stylesheet %}
@@ -8,7 +8,15 @@
 
 {% block title %}Dashboard{% endblock %}
 
-{% block inner_content %}
+{% block websocket_status %}
+<div class="conn-status" style="display: flex; align-items: center;">
+    <span style="margin-right: 0.5rem;" class="dot connect-btn"></span>
+    <span>Connected</span>
+</div>
+{% endblock %}
+
+
+{% block main_content %}
 <style>
     .side-btn {
         font-size: 2.5rem;
@@ -261,6 +269,8 @@
     // ----------------------------------------------------
     // Loading up the Asset Allocation bar
     // ----------------------------------------------------
+    const assetColors = ['blue', 'green', 'yellow', 'red'];
+    let pointer = 0;
     for (let [ticker, data] of Object.entries(assetAllocJson)) {
         const div = document.createElement('div');
         div.classList.add('progress');
@@ -272,6 +282,8 @@
 
         const secondDiv = document.createElement('div');
         secondDiv.classList.add('progress-bar', 'bg-progress-gradient', 'border-end', 'border-100', 'border-2');
+        secondDiv.style.backgroundColor = assetColors[pointer];
+        pointer += 1;
 
         div.appendChild(secondDiv);
         assetAllocDiv.appendChild(div);

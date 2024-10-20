@@ -1,0 +1,83 @@
+{% extends 'bases/base.html' %}
+{% load static %}
+
+{% block stylesheet %}{% endblock %}
+{% block title %}{% endblock %}
+
+
+{% block content %}
+<style>
+    /* Nav Buttons */
+    .nav-btn {
+        color: black;
+        border: none;
+        border-radius: 0;
+    }
+    .nav-btn:hover {
+        border-bottom: 1px solid #5091D4;
+    }
+    .nav-btn a {
+        color: black;
+        text-decoration: none;
+    }
+
+    /* Watchlist Styles */
+    .watchlist {
+        position: relative;
+        display: inline-block;
+    }
+    .watchlist:hover
+    .watchlist-items {
+        display: block;
+     }
+    .watchlist-items {
+        display: none;
+        padding: 0.5rem;
+        position: absolute;
+        background-color: white;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+        border-radius: 0.5rem;
+        z-index: 1;
+    }
+    .watchlist-items a {
+        color: black;
+        display: block;
+        padding: 6px 6px;
+        text-decoration: none;
+        border-radius: 0.2rem;
+    }
+    .watchlist-items a:hover {
+        background-color: #DCEAF7;
+        color: #5091D4;
+    }
+</style>
+<header
+        style="display: flex; align-items: center; border-bottom: 1px solid #dedede;
+        justify-content: space-between; padding: 1rem 2rem 0 2rem;">
+    <div class="container mb-1">
+        <button class="btn nav-btn">
+            <a href="/dashboard">My Portfolio</a>
+        </button>
+        <div class="watchlist">
+            <button class="btn nav-btn watchlist-btn">Watchlist</button>
+            <div class="watchlist-items">
+                <a href="/dashboard/watchlist/?q=BTC-USDT">BTC-USDT</a>
+                <a href="/dashboard/watchlist?q=ETH-USDT">ETH-USDT</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="container" style="display: flex; flex-direction: row; justify-content: flex-end">
+            {% block websocket_status %}{% endblock %}
+            <div id="email" class="btn">{{ email }}</div>
+        </div>
+    </div>
+</header>
+{% block main_content %}
+{% endblock %}
+{% endblock %}
+
+{% block javascript %}
+{% endblock %}

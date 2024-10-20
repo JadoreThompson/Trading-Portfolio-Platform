@@ -92,7 +92,6 @@ document.addEventListener('DOMContentLoaded', function(){
             let num = Number(parseFloat(realisedSpan.textContent.replace('$', '')).toFixed(2));
             num = num + wsMsg.amount;
             realisedSpan.textContent = num;
-            console.log(num);
             assignColor(realisedSpan);
         }
 

@@ -3,16 +3,16 @@ import os
 import uuid
 from datetime import datetime, timedelta
 import requests
+from urllib.parse import quote
 
 # Local
 from .forms import CreateOrderForm
 from .models import Orders
 from .formulas import sharpe_ratio, sortino_ratio, sharpe_std
-from .price_updater import redis_client
 
 # Django
-from django.db.models import Case, When, FloatField, Count, Avg, DateTimeField
-from django.db.models.functions import ExtractMonth, ExtractDay, ExtractWeekDay, Trunc
+from django.db.models import Case, When, Count, Avg
+from django.db.models.functions import ExtractMonth, ExtractWeekDay, Trunc
 
 from django.http import JsonResponse
 from django.db.models import Sum
@@ -158,7 +158,6 @@ def get_tickers(request):
 
 def get_growth(request):
     if request.method == 'GET':
-        print('got request')
         interval = request.GET.get('interval')
         if interval not in ['week', 'month', 'year']:
             return JsonResponse(status=405, data={'error': 'Invalid interval. Must be week, month, year'})
@@ -191,7 +190,6 @@ def get_growth(request):
             for item in trades
         }
         data['starting_balance'] = request.user.balance + sum(data[key] for key in data)
-        print(json.dumps(data, indent=4))
         return JsonResponse(status=200, data=data)
     return JsonResponse(status=400, data={'error': 'bad request'})
 
@@ -199,7 +197,7 @@ def get_growth(request):
 # ---------------------------------------------------------------
 #                                   ALL WATCHLIST RELATED
 # ---------------------------------------------------------------
-def currency_stats(symbol):
+def get_currency_stats(symbol):
     """
     Returns a dictionary of data points for the symbol. This is not a view function
     :param symbol:
@@ -220,22 +218,33 @@ def currency_stats(symbol):
 @login_required
 def get_watchlist(request):
     try:
-        symbol = request.GET.get('q')
-        cc_data = currency_stats(symbol)
+        BASE_URL = 'https://newsapi.org/v2'
+        API_KEY = os.getenv('NEWS_API_KEY')
+        currency = request.GET.get('q')
+        currency_statistics = get_currency_stats(currency)
 
-        try:
-            sentiment = json.loads(redis_client.get(symbol.split("-")[0]).decode())
-        except AttributeError:
-            r = requests.get(f'http://127.0.0.1:80/sentiment?currency={symbol.split("-")[0]}')
-            sentiment = r.json()
-            redis_client.set(symbol.split("-")[0], json.dumps(sentiment))
-        print("sentimnet: ", sentiment)
-
+        r = requests.get(
+            BASE_URL + f"/everything?"
+                       f"q={currency}"
+                       f"&apiKey={quote(API_KEY)}"
+                       f"&from={datetime.now().date() - timedelta(days=2)}"
+                       f"&language=en"
+                       f"&pageSize=12"
+                       "&sortBy=pubishedAt"
+        )
+        articles = [
+            {
+                'source': item.get('source', {}).get('name', None),
+                'title': item.get('title', None),
+                'image': item.get('urlToImage', None),
+                'description': item.get('description', None)
+            } for item in r.json()['articles'][:10]
+        ]
         return render(request, 'dashboard/watchlist.html', {
-            'symbol': symbol,
+            'symbol': currency,
             'email': request.user.email,
-            'cc_data': cc_data,
-            'sentiment': json.dumps(sentiment)
+            'cc_data': currency_statistics,
+            'articles': articles
         })
     except Exception as e:
         print(type(e), str(e), end=f"\n{"-" * 10}\n")
@@ -243,7 +252,7 @@ def get_watchlist(request):
 
 def get_currency_data(request):
     if request.method == 'GET':
-        data = currency_stats(request.GET.get('q'))
+        data = get_currency_stats(request.GET.get('q'))
         return JsonResponse(status=200, data=data)
     else:
         return JsonResponse(status=400, data={'error': 'Invalid request type'})
