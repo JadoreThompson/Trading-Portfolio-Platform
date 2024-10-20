@@ -39,25 +39,25 @@ def send_email(subject, body, recipient, file=None):
         message["From"] = settings.SENDER_EMAIL
         message["Subject"] = subject
 
-        if file:
-            with open(file, 'rb') as f:
-                pdf_data = f.read()
-                message.add_attachment(pdf_data, maintype='application', subtype='pdf', filename=file)
+        if file is not None:
+            if os.path.exists(file):
+                with open(file, 'rb') as f:
+                    pdf_data = f.read()
+                    message.add_attachment(pdf_data, maintype='application', subtype='pdf', filename=file)
+                os.remove(file)
 
 
         # encoded message
         encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
 
         create_message = {"raw": encoded_message}
-        # pylint: disable=E1101
         send_message = (
             service.users()
             .messages()
             .send(userId="me", body=create_message)
             .execute()
         )
-        print(f'Message Id: {send_message["id"]}')
-        os.remove(file)
+
     except HttpError as error:
         print(f"An error occurred: {error}")
 
@@ -110,7 +110,7 @@ def schedule_weekly_pdf(user):
         crontab=schedule,
         name=uuid4(),
         task='dashboard.tasks.weekly_pdf',
-        args=json.dumps([user]),
+        args=json.dumps([str(user)]),
         enabled=True,
         one_off=True,
     )

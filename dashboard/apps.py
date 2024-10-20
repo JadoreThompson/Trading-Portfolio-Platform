@@ -12,15 +12,15 @@ class DashboardConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'dashboard'
 
-    '''Start Up Function'''
-    def ready(self):
-        from dashboard.price_updater import start_order_updater
-
-        def run_async_loop():
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-            loop.run_until_complete(start_order_updater())
-
-        # Start the async loop in a separate thread
-        thread = threading.Thread(target=run_async_loop, daemon=True)
-        thread.start()
+    # '''Start Up Function'''
+    # def ready(self):
+    #     from dashboard.price_updater import start_order_updater
+    #
+    #     def run_async_loop():
+    #         loop = asyncio.new_event_loop()
+    #         asyncio.set_event_loop(loop)
+    #         loop.run_until_complete(start_order_updater())
+    #
+    #     # Start the async loop in a separate thread
+    #     thread = threading.Thread(target=run_async_loop, daemon=True)
+    #     thread.start()

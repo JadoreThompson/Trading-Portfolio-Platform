@@ -1,8 +1,10 @@
+from datetime import datetime
 from uuid import uuid4
 
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import models
 from django.contrib.auth.models import BaseUserManager
+from django.conf import settings
 
 
 class CustomUserManager(BaseUserManager):
@@ -32,6 +34,7 @@ class CustomUser(AbstractBaseUser):
     password = models.CharField()
     balance = models.FloatField(default=100000, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=False)
 
     objects = CustomUserManager()
 
@@ -40,3 +43,12 @@ class CustomUser(AbstractBaseUser):
 
     def __str__(self):
         return f"Email: {self.email} Balance:{self.balance}"
+
+
+class EmailConfirmTokens(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    token = models.CharField(unique=True)
+    created_at = models.IntegerField(default=int(datetime.now().timestamp()))
+
+    def __str__(self):
+        return f"user: {self.user}, token: {self.token}"

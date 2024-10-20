@@ -15,7 +15,7 @@
                 <h1>Register</h1>
             </div>
             <div class="card-body">
-                <form action="{% url 'register' %}" method="post">
+                <form id="register-form" action="{% url 'register' %}" method="post">
                     {% csrf_token %}
                     <div class="col mb-3">
                         <label for="email">Email</label><br>
@@ -29,9 +29,27 @@
                         <input class="submit-btn" type="submit" value="Submit" style="width: 100%;">
                     </div>
                 </form>
-                {% for mesage in messages %}
-                    <span>{{ message }}</span>
-                {% endfor %}
+                <div class="col r-errors">
+                    {% for message in messages %}
+                        <span style="max-width: 100%;">{{ message }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!--Confirm Email Card-->
+        <div class="card confirm-email-card" style="display: none;">
+            <div class="card-title m-1">
+                <h1>Confirm Email</h1>
+            </div>
+            <div class="card-body">
+                <form action="{% url 'confirm_email' %}" method="post" id="confirm-form">
+                    {% csrf_token %}
+                    <input class="mb-1" type="text" name="token" id="token" placeholder="Enter Token">
+                    <br>
+                    <input type="submit" value="Submit" style="width: 100%;">
+                </form>
+                <div class="col c-errors"></div>
             </div>
         </div>
     </div>
@@ -39,4 +57,5 @@
 {% endblock %}
 
 {% block javascript %}
+<script src="{% static 'js/register.js' %}"></script>
 {% endblock %}
