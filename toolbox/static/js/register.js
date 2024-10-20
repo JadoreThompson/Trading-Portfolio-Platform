@@ -26,9 +26,6 @@ document.addEventListener('DOMContentLoaded', async function(){
             return response.json();
         })
         .then(data => {
-            console.log(this.email);
-            console.log(formData);
-            console.log(formData.email);
             email = formData.get('email');
             registerCard.style.display = 'none';
             confirmEmailCard.style.display = 'flex';

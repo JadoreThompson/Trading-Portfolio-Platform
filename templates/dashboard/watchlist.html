@@ -27,7 +27,7 @@
       align-items: center;
       border: none;
       border-bottom: dashed;
-      border-bottom-width: 0.15rem;
+      border-bottom-width: 0.1rem;
       border-bottom-color: grey;
       margin: 0;
       padding: 0.5rem;
@@ -38,7 +38,7 @@
   </style>
   <div class="chart-stat-container" style="height: 5rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
     <div class="stat">
-        <span>Volume(24)</span><span style="font-weight: 650;">{{ cc_data.current_day_quote_volume }}</span>
+        <span>Volume(24h)</span><span style="font-weight: 650;">{{ cc_data.current_day_quote_volume }}</span>
     </div>
     <div class="stat">
         <span>Open(24h)</span><span style="font-weight: 650;">{{ cc_data.current_day_open }}</span>

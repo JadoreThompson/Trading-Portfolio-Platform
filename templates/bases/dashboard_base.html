@@ -148,7 +148,7 @@
                                 .then(response => response.json())
                                 .then(data => {
                                     console.log(data);
-                                    // show a little overlay that it's added or give it a green backgrond
+                                    t.style.backgroundColor = 'pink';
                                 })
                                 .catch(e => {
                                     console.error(e.message);
