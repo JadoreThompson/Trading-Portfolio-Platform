@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
     order_socket.onmessage = async function(e){
         const wsMsg = JSON.parse(e.data);
+        console.log(wsMsg);
         if (wsMsg?.type === 'order_confirmation') {
             document.querySelector('.order-msg').textContent = wsMsg.message;
             await showAlert('Order Created');
@@ -28,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function(){
         else if (wsMsg?.topic === 'order_created') {
             const tbody = open_positions_table.querySelector('tbody');
             const tr = document.createElement('tr');
-            const cols = ['ticker', 'open_price', 'unrealised_pnl'];
+            const cols = ['ticker', 'open_price', 'unrealised_pnl', 'order_type'];
 
             cols.forEach(col => {
                 const td = document.createElement('td');
@@ -72,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function(){
             const tbody = all_positions_table.querySelector('tbody');
             tr = document.createElement('tr');
 
-            const cols = ['ticker', 'realised_pnl', 'created_at', 'dollar_amount', 'open_price', 'close_price'];
+            const cols = ['ticker', 'order_type', 'realised_pnl', 'created_at', 'closed_at','dollar_amount', 'open_price', 'close_price'];
             cols.forEach(col => {
                 const td = document.createElement('td');
                 td.textContent = wsMsg[col];
@@ -194,8 +195,11 @@ document.addEventListener('DOMContentLoaded', function(){
     // Placing an order
     document.getElementById('order-form').addEventListener('submit', async function(e){
         e.preventDefault();
+        let data = {};
+
         const formData = new FormData(e.target);
-        let data = { action: 'open', user_id: email,...Object.fromEntries(formData.entries()) };
+        data['order_type'] = e.submitter.value;
+        Object.assign(data, { action: 'open', user_id: email,...Object.fromEntries(formData.entries()) });
         order_socket.send(JSON.stringify(data));
     });
 

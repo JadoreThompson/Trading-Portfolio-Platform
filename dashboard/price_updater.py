@@ -132,13 +132,22 @@ async def process_order(current_ticker_price, order: Orders):
     :param current_ticker_price: The latest price for the ticker.
     :param order: The order instance being processed.
     """
-    price_change = (current_ticker_price - order.open_price) / order.open_price
-    new_equity = float("{:.2f}".format(order.dollar_amount - (order.dollar_amount * (1 + price_change))))
-    if new_equity == -1 * order.dollar_amount:
-        await close_position(order, current_ticker_price, new_equity)
-    else:
-        await save_unrealised_pl(order, new_equity)
-        await send_position_update(order, current_ticker_price, new_equity)
+    if order.order_type == 'long':
+        price_change = (current_ticker_price - order.open_price) / order.open_price
+        new_equity = round(order.dollar_amount - (order.dollar_amount * (1 + price_change)), 2)
+        if new_equity == -1 * order.dollar_amount:
+            await close_position(order, current_ticker_price, new_equity)
+        else:
+            await save_unrealised_pl(order, new_equity)
+            await send_position_update(order, current_ticker_price, new_equity)
+    if order.order_type == 'short':
+        price_change = -1 * ((current_ticker_price - order.open_price) / order.open_price)
+        new_equity = round(order.dollar_amount - (order.dollar_amount * (1 + price_change)), 2)
+        if new_equity == -1 * order.dollar_amount:
+            await close_position(order, current_ticker_price, new_equity)
+        else:
+            await save_unrealised_pl(order, new_equity)
+            await send_position_update(order, current_ticker_price, new_equity)
 
 
 async def close_position(order: Orders, close_price: int | float, amount, reason='liquidated'):
@@ -199,6 +208,7 @@ async def send_position_update(order, current_price: int | float, amount):
                 'ticker': order.ticker,
                 'current_price': current_price,
                 'amount': amount,
+                'order_type': order.order_type,
                 'order_id': str(order.order_id)
             }
         }

@@ -5,6 +5,10 @@ from django.conf import settings
 
 
 class Orders(models.Model):
+    ORDER_TYPES = [
+        ('long', 'Long'),
+        ('short', 'Short'),
+    ]
     order_id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     ticker = models.CharField()
@@ -16,6 +20,7 @@ class Orders(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     closed_at = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField()
+    order_type = models.CharField(choices=ORDER_TYPES, default='null')
 
 
 class Watchlist(models.Model):

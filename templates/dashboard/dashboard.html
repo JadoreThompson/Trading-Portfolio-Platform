@@ -91,7 +91,11 @@
                                             <label for="id_dollar_amount">Dollar Amount</label>
                                             <input type="number" name="dollar_amount" id="id_dollar_amount" required>
                                         </div>
-                                        <input type="submit" value="Submit Order">
+                                        <div class="order-submit-container"
+                                             style="display: flex; flex-direction: row; align-items: center; justify-content: space-around;">
+                                            <button class="btn" type="submit" value="long" name="order_type" style="background-color: #037B66; width: 45%;">long</button>
+                                            <button class="btn" type="submit" value="short" name="order_type" style="background-color: #D60A22; width: 45%;">short</button>
+                                        </div>
                                         <span class="order-msg"></span>
                                     </form>
                                 </div>
@@ -116,6 +120,7 @@
                         <td>Ticker</td>
                         <td>Open Price</td>
                         <td>Unrealised P\L</td>
+                        <td>Order Type</td>
                         <td><i class="fa-solid fa-bars"></i></td>
                     </tr>
                     </thead>
@@ -128,6 +133,7 @@
                             </td>
                             <td>{{ p.open_price }}</td>
                             <td class="upl">{{ p.unrealised_pnl }}</td>
+                            <td>{{ p.order_type }}</td>
                             <td><i class="fa-solid fa-xmark close-open-order"></i></td>
                         </tr>
                     {% endfor %}
@@ -139,8 +145,10 @@
                     <thead class="border-bottom border-dark-subtle">
                     <tr>
                         <td>Ticker</td>
+                        <td>Order Type</td>
                         <td>Realised P\L</td>
                         <td>Open Time</td>
+                        <td>Close Time</td>
                         <td>Investment</td>
                         <td>Open Price</td>
                         <td>Close Price</td>
@@ -150,9 +158,11 @@
                     {% for order in closed_positions %}
                         <tr>
                             <td>{{order.ticker}}</td>
+                            <td>{{ order.order_type }}</td>
                             <td class="rpl">{{ order.realised_pnl }}</td>
                             <td>{{ order.dollar_amount}}</td>
                             <td>{{ order.created_at }}</td>
+                            <td>{{ order.closed_at }}</td>
                             <td>{{ order.open_price }}</td>
                             <td>{{ order.close_price }}</td>
                         </tr>
