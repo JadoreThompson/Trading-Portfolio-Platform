@@ -20,7 +20,7 @@
     <div class="container d-flex align-items-center justify-content-center" style="height: 100%;">
         <div class="card auth-card" style="display: flex;">
             <div class="card-title m-1">
-                <h1>Register</h1>
+                <span>Register</span>
             </div>
             <div class="card-body">
                 <form id="register-form" action="{% url 'register' %}" method="post">
@@ -34,7 +34,7 @@
                         <input type="password" name="password" id="password" required>
                     </div>
                     <div class="col mb-3 d-flex justify-content-center align-items-center">
-                        <input class="submit-btn" type="submit" value="Submit" style="width: 100%;">
+                        <input class="btn btn-primary" type="submit" value="Submit" style="width: 100%;">
                     </div>
                 </form>
                 <div class="col r-errors">
@@ -46,18 +46,18 @@
         </div>
 
         <!--Confirm Email Card-->
-        <div class="card confirm-email-card" style="display: none; padding: 1rem;">
+        <div class="card auth-card confirm-email-card" style="display: none; padding: 1rem;">
             <div class="card-title m-1">
                 <h2>Confirm Email</h2>
             </div>
             <div class="card-body">
-                <form action="{% url 'confirm_email' %}" method="post" id="confirm-form">
+                <form class="mb-2" action="{% url 'confirm_email' %}" method="post" id="confirm-form">
                     {% csrf_token %}
-                    <input style="width: 100%;" class="mb-1" type="text" name="token" id="token" placeholder="Enter Token">
+                    <input style="width: 100%;" class="mb-3" type="text" name="token" id="token" placeholder="Enter Token">
                     <br>
-                    <input class="submit-btn" type="submit" value="Submit" style="width: 100%;">
+                    <input class="btn btn-primary" type="submit" value="Submit" style="width: 100%;">
                 </form>
-                <div class="col d-flex flex-column">
+                <div class="col d-flex flex-column mb-2">
                     <a style="text-align: center;  color: black;" id="resend-email" href="{% url 'resend_email_confirmation' %}">Resend Confirmation</a>
                 </div>
                 <div class="col c-errors"></div>

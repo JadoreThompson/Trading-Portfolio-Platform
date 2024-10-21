@@ -10,27 +10,206 @@
     body {
         background-color: white;
     }
-    .btn {
+    /*.btn {
         border: 1px solid black;
+        border-radius: 3rem;
+        line-height: 1.75rem;
+    }*/
+
+    .btn {
+        border-radius: 3rem;
+    }
+
+    .btn-container .btn {
+        height: 3rem;
+        width: 9rem;
+        line-height: 2rem;
+        font-size: 1.25rem;
+    }
+
+    .landing-screen {
+        box-sizing: border-box:
+        overflow: hidden;
+        position: relative;
+        background-image: url('{% static 'images/photo-1480497490787-505ec076689f.jpeg' %}');
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+
+    .landing-screen .container-interest {
+        width: 100%;
+        height: 100%;
+    }
+
+    .section1 .container {
+        padding: 0 8rem 0 8rem;
+    }
+    .section1 .container .card {
+        width: 25rem;
+        height: 40rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border-radius: 3rem;
+    }
+
+    .section1-container .card-title {
+        margin-top: 2rem;
+        margin-left: 1rem;
+    }
+
+    .section1-container .card-title span {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    .section1-container .card-text {
+        font-size: 1.25rem;
+        font-weight: 300;
+        position: relative;
+        height: 200px;
+        margin-bottom: 0;
+        padding: bottom: 0;
+    }
+
+    .section1-container .card-img-top {
+        height: 10rem;
+        display: flex;
+        justify-content: center;
+    }
+
+    .section1-container .card-img-top img {
+        height: 100%;
+    }
+
+    .section1-container .card-footer {
+        max-width: 100%;
+        width: 100%;
+        position: absolute;
+        bottom: 0;
+        padding-bottom: 2rem;
+        border: none;
+        background-color: rgba(0, 0, 0, 0);
+    }
+    .section1-container .card-footer a {
+        font-weight: 500;
+        border: 2px solid black !important;
+    }
+
+    .section3 .btn {
+        height: 3rem;
+        width: 40%;
+        line-height: 2.25rem;
+        font-size: 1.25rem;
+        font-weight: 500;
     }
 </style>
-<main class="landing-screen" role="main" style="margin: 0; height: 100vh; display: flex;">
+
+<header style="height: 5rem; display: flex; align-items: center;">
+    <div class="container" style="display: flex; justify-content: space-between;">
+        <div class="container" style="height: 50px;">
+            <a href="/" class="">
+                <img style="height: 100%;" src="{% static 'images/Screenshot 2024-10-21 172515.png' %}" alt="">
+            </a>
+        </div>
+        <a href="/accounts/login" class="btn btn-primary" style="width: 8rem; height: 2.5rem; ">Login</a>
+    </div>
+</header>
+
+<main class="landing-screen" role="main"
+      style="background-color: red; border-radius: 5rem 5rem 0 0; margin: 0; height: 60vh; display: flex; margin-bottom: 4rem;">
+    <div class="container-interest"></div>
     <div class="container row"
-         style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
-          box-sizing: border-box; text-align: left;">
-        <div class="col-6">
-            <h1 style="font-size: 3.5rem;">Rise to the top, building your portfolio one step at a time</h1>
-            <span style="font-size: 1.2rem; color: #5e666e;">Trade and stay up to date with CryptoCurrency</span>
-            <div class="btn-container" style="margin: 0; padding: 1rem;">
-                <a href="/accounts/register" class="btn btn-primary">Get Started</a>
-                <a href="/dashboard" class="btn btn-secondary">Dashboard</a>
+        style="position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%);
+        box-sizing: border-box; text-align: left;">
+            <div class="container" style="text-align: center; display: flex; flex-direction: column; justify-content: center;">
+                <div class="container" style="color: white; margin-bottom: 2rem;">
+                    <h1 style="font-size: 4rem;">Turn your theory into money</h1>
+                    <span style="color: white; font-size: 1.5rem; font-weight: 250;">Start with $100,000 free</span>
+                </div>
+                <div class="btn-container">
+                    <a class="btn btn-primary" href="#">Unlock</a>
+                    <a class="btn btn-secondary" href="#">Dashboard</a>
+                </div>
             </div>
-        </div>
-        <div class="col-6" style="padding: 0; max-height: 100%; max-width: 100%;;">
-            <img style="margin: 0; padding: 0; height: 100%; width: 100%;" src="{% static 'images/COMPUT_1.png' %}" alt="">
-        </div>
     </div>
 </main>
+
+<style>
+    .social-container .social {
+        font-size: 2.5rem;
+    }
+</style>
+<section class="section1" style="margin-bottom: 4rem;">
+    <div class="section1-container container row" style="justify-content: space-around; display: flex; min-width: 100%;">
+        <div class="card col-4">
+            <div class="card-title">
+                <span>Bespoke Insights</span>
+            </div>
+            <div class="card-img-top">
+                <img src="{% static 'images/market-growing.svg' %}" alt="">
+            </div>
+            <div class="card-text">
+                <p>Tailored analysis on market trends and investment opportunities. Stay ahead with insights specific to your portfolio.</p>
+            </div>
+            <div class="card-footer">
+                <a href="/accounts/register" class="btn">Get Started</a>
+            </div>
+        </div>
+        <div class="card col-4">
+            <div class="card-title">
+                <span>Market Access</span>
+            </div>
+            <div class="card-img-top">
+                <img src="{% static 'images/man-in-chair.svg' %}" alt="">
+            </div>
+            <div class="card-text">
+                <p>Get exclusive access to a variety of cryptocurrencies asset classes, enabling a diversified approach to your investments.</p>
+            </div>
+            <div class="card-footer">
+                <a href="/accounts/register" class="btn">Get Started</a>
+            </div>
+        </div>
+        <div class="card col-4">
+            <div class="card-title">
+                <span>Weekly Portfolio Breakdowns</span>
+            </div>
+            <div class="card-img-top">
+                <img src="{% static 'images/call-lady.svg' %}" alt="">
+            </div>
+            <div class="card-text">
+                <p>Every Friday at 16:30, you'll receive a PDF containing a bitesize summary of your account and portfolio data.</p>
+            </div>
+            <div class="card-footer">
+                <a href="/accounts/register" class="btn">Get Started</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section3" style="margin-bottom: 4rem;">
+    <div class="container" style="display: flex; justify-content: center; align-items: center; height: 5rem;">
+        <div class="container" style="padding: 1rem; width: 40%; display: flex; justify-content: space-around;">
+            <a class="btn btn-primary" href="/accounts/register">Unlock</a>
+            <a class="btn btn-secondary" href="/dashboard">Dashboard</a>
+        </div>
+    </div>
+</section>
+
+
+<footer class="d-flex flex-wrap justify-content-between align-items-center py-3 my-4 border-top">
+    <div class="col-md-4 d-flex align-items-center">
+        <a href="/" class="mb-3 me-2 mb-md-0 text-body-secondary text-decoration-none lh-1">
+            <svg class="bi" width="30" height="24"><use xlink:href="#bootstrap"></use></svg>
+        </a>
+        <span class="mb-3 mb-md-0 text-body-secondary">© 2024 Jadore, Inc</span>
+    </div>
+
+    <ul class="social-container nav col-md-4 justify-content-end list-unstyled d-flex" style="margin-right: 10rem;">
+        <li class="ms-3"><a class="text-body-secondary" href="https://github.com/JadoreThompson/" target="_blank"><i class="social fa-brands fa-github"></i></a></li>
+    </ul>
+</footer>
+
 {% endblock %}
 
 {% block javascript %}

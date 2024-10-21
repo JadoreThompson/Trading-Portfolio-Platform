@@ -18,21 +18,23 @@
     <title>{% block title %}{% endblock %}</title>
 
     <style>
-        .btn-primary {
-            background-color: #5091D4;
-            border: none !important;
+        .btn.btn-primary {
+            background-color: #0345fc;
+            border: 2px solid #0345fc !important;
         }
         .btn-primary:hover {
-            background-color: #5083d4;
-        }
-        .btn-secondary {
             background-color: white;
-            border: 1px solid #5091D4 !important;
-            color: #5091D4;
+            color: #0345fc;
+            border: 2px solid #0345fc !important;
         }
-        .btn-secondary {
-            background-color: white !important;
-            color: #5091D4 !important;
+        .btn.btn-secondary {
+            background-color: white;
+            border: 2px solid #0345fc !important;
+            color: #0345fc !important;
+        }
+        .btn.btn-secondary:hover {
+            background-color: #0345fc !important;
+            color: white !important;
         }
 
         .dot {
@@ -49,6 +51,15 @@
         .good {
             background-color: #037B66 !important;
         }
+
+        .auth-card {
+            border-radius: 1.5rem;
+        }
+        .auth-card .card-title span {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
     </style>
 </head>
 <body>

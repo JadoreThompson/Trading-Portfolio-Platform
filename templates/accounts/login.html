@@ -12,7 +12,7 @@
     <div class="container d-flex align-items-center justify-content-center" style="height: 100%;">
         <div class="card auth-card">
             <div class="card-title m-1">
-                <h1>Login</h1>
+                <span>Login</span>
             </div>
             <div class="card-body">
                 <form action="{% url 'login' %}" method="post">
@@ -26,7 +26,7 @@
                         <input type="password" name="password" id="password" required>
                     </div>
                     <div class="col mb-3 d-flex justify-content-center align-items-center">
-                        <input class="submit-btn" type="submit" value="Submit" style="width: 100%;">
+                        <input class="btn btn-primary" type="submit" value="Submit" style="width: 100%;">
                     </div>
                 </form>
                 {% for mesage in messages %}
