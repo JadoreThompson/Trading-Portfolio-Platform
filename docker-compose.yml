@@ -1,0 +1,36 @@
+services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  sa_api:
+    build:
+      context: C:\Users\ADMIN\Cloned_Projects\CryptoSentimentAnalysis
+    ports:
+      - '80:80'
+
+  web_app:
+    build:
+      context: .
+    ports:
+      - '8080:8080'
+    depends_on:
+      - redis
+
+  celery_worker:
+    build:
+      context: .
+    command: 'celery -A toolbox worker --pool=solo -l INFO'
+    depends_on:
+      - redis
+      - web_app
+
+  celery_beat:
+    build:
+      context: .
+    command: 'celery -A toolbox beat -l INFO --scheduler django_celery_beat.schedulers.DatabaseScheduler'
+    depends_on:
+      - redis
+      - web_app
+      - celery_worker

@@ -60,6 +60,15 @@
         background-color: #DCEAF7;
         color: #5091D4;
     }
+
+    .watchlisted-container i {
+        /*background-color: #DCEAF7;
+        color: #5091D4;*/
+        color: #5091D4;
+    }
+    .watchlisted-container i:hover {
+        color: #2c6fdb !important;
+    }
 </style>
 <header
         style="display: flex; align-items: center; border-bottom: 1px solid #dedede;
@@ -79,7 +88,11 @@
                     <span>Add</span>
                 </a>
                 {% for item in watchlist %}
-                    <a href="/dashboard/watchlist/?q={{ item.ticker }}">{{ item.ticker }}</a>
+                    <div class="watchlisted-container container" style="display: flex; align-items: center;">
+                        <a style="width: 100%;" class="watchlisted-ticker" href="/dashboard/watchlist/?q={{ item.ticker }}">{{ item.ticker }}</a>
+                        <i class="watchlist-item-delete fa-solid fa-trash"
+                           style="position: absolute; z-index: 1; right: 1.5rem;"></i>
+                    </div>
                 {% endfor %}
             </div>
         </div>
@@ -122,6 +135,11 @@
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // --------------------------------------------------------------------------------------
+        //              Watchlist
+        // --------------------------------------------------------------------------------------
+
+        // Adding to watchlist
         document.getElementById('watchlist-input').addEventListener('input', function(e){
             const inputValue = e.target.value.trim();
             if (inputValue) {
@@ -148,6 +166,7 @@
                                 .then(response => response.json())
                                 .then(data => {
                                     console.log(data);
+                                    t.classList.add('watchlisted-ticker');
                                     t.style.backgroundColor = 'pink';
                                 })
                                 .catch(e => {
@@ -158,6 +177,33 @@
                     }
                 });
             }
+        });
+
+
+        // Removing from watchlist
+        document.querySelectorAll('.watchlist-item-delete').forEach(button => {
+            button.addEventListener('click', function () {
+                const div = this.closest('div');
+                fetch(`/dashboard/remove-watchlist`, {
+                    method: 'POST',
+                    body: JSON.stringify({ ticker: div.querySelector('a').textContent })
+                })
+                .then(r => {
+                    if (!r.ok) {
+                        return r.json().then(d => {
+                            throw new Error(d['error']);
+                        });
+                    }
+                    return r.json();
+                })
+                .then(d => {
+                    console.log(d);
+                    this.closest('div').remove();
+                })
+                .catch(e => {
+                    console.error('Error: ', e.message);
+                });
+            });
         });
     });
 </script>

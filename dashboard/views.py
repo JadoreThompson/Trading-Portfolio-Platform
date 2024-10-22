@@ -278,3 +278,15 @@ def add_to_watchlist(request):
     except Exception as e:
         print(type(e), str(e))
         return JsonResponse(status=500, data={'error': 'Something went wrong'})
+
+
+@csrf_exempt
+def remove_from_watchlist(request):
+    if request.method != 'POST':
+        return JsonResponse(status=400, data={'error': 'Invalid request type'})
+    try:
+        Watchlist.objects.get(user=request.user, ticker=json.loads(request.body).get('ticker')).delete()
+        return JsonResponse(status=200, data={'message': 'Item deleted from watchlist'})
+    except Exception as e:
+        print(type(e), str(e))
+        return JsonResponse(status=500, data={'error': 'Something went wrong'})

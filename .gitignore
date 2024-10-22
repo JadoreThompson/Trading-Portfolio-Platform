@@ -2,3 +2,5 @@
 **/__pycache__
 notes.txt
 gc_client_secret.json
+docker-compose.yml
+dockerfile
