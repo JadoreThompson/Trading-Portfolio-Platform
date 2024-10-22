@@ -284,9 +284,12 @@ def add_to_watchlist(request):
 def remove_from_watchlist(request):
     if request.method != 'POST':
         return JsonResponse(status=400, data={'error': 'Invalid request type'})
+
     try:
-        Watchlist.objects.get(user=request.user, ticker=json.loads(request.body).get('ticker')).delete()
+        Watchlist.objects.get(user=request.user, ticker=json.loads(request.body).get('ticker').replace("/", "-")).delete()
         return JsonResponse(status=200, data={'message': 'Item deleted from watchlist'})
+    except Watchlist.DoesNotExist:
+        return JsonResponse(status=404, data={'error': "Item doesn't exist"})
     except Exception as e:
         print(type(e), str(e))
         return JsonResponse(status=500, data={'error': 'Something went wrong'})

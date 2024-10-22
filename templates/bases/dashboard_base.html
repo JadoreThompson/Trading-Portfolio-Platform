@@ -61,13 +61,23 @@
         color: #5091D4;
     }
 
+    .watchlisted-container.container {
+        display: flex;
+        align-items: center;
+    }
     .watchlisted-container i {
-        /*background-color: #DCEAF7;
-        color: #5091D4;*/
         color: #5091D4;
     }
     .watchlisted-container i:hover {
         color: #2c6fdb !important;
+    }
+    .watchlisted-ticker {
+        width: 100%;
+    }
+    .watchlisted-item-delete {
+        position: absolute;
+        z-index: 1;
+        right: 1.5rem;
     }
 </style>
 <header
@@ -88,10 +98,9 @@
                     <span>Add</span>
                 </a>
                 {% for item in watchlist %}
-                    <div class="watchlisted-container container" style="display: flex; align-items: center;">
-                        <a style="width: 100%;" class="watchlisted-ticker" href="/dashboard/watchlist/?q={{ item.ticker }}">{{ item.ticker }}</a>
-                        <i class="watchlist-item-delete fa-solid fa-trash"
-                           style="position: absolute; z-index: 1; right: 1.5rem;"></i>
+                    <div class="watchlisted-container container">
+                        <a class="watchlisted-ticker" href="/dashboard/watchlist/?q={{ item.ticker }}">{{ item.ticker }}</a>
+                        <i class="watchlist-item-delete fa-solid fa-trash"></i>
                     </div>
                 {% endfor %}
             </div>
@@ -167,7 +176,25 @@
                                 .then(data => {
                                     console.log(data);
                                     t.classList.add('watchlisted-ticker');
-                                    t.style.backgroundColor = 'pink';
+                                    t.style.backgroundColor = '#5091D4';
+                                    t.style.color = '#DCEAF7';
+
+                                    const div = document.querySelector('.watchlist-items');
+                                    const newDiv = document.createElement('div');
+                                    newDiv.classList.add('watchlisted-container', 'container');
+
+                                    const a = document.createElement('a');
+                                    a.classList.add('watchlisted-ticker');
+                                    a.href = `/dashboard/watchlist/?q=${t.textContent}`;
+                                    a.textContent = t.textContent;
+
+                                    const i = document.createElement('i');
+                                    i.classList.add('watchlist-item-delete', 'fa-solid', 'fa-trash');
+                                    removeWatchlistListener(i);
+
+                                    newDiv.appendChild(a);
+                                    newDiv.appendChild(i);
+                                    div.appendChild(newDiv);
                                 })
                                 .catch(e => {
                                     console.error(e.message);
@@ -180,9 +207,34 @@
         });
 
 
+        function removeWatchlistListener(button) {
+            button.addEventListener('click', function () {
+                const div = this.closest('div');
+                fetch(`/dashboard/remove-watchlist`, {
+                    method: 'POST',
+                    body: JSON.stringify({ ticker: div.querySelector('a').textContent })
+                })
+                .then(r => {
+                    if (!r.ok) {
+                        return r.json().then(d => {
+                            throw new Error(d);
+                        });
+                    }
+                    return r.json();
+                })
+                .then(d => {
+                    console.log(d);
+                    div.remove();
+                })
+                .catch(e => {
+                    console.error('Error: ', e.message);
+                });
+            });
+        }
+
         // Removing from watchlist
         document.querySelectorAll('.watchlist-item-delete').forEach(button => {
-            button.addEventListener('click', function () {
+            /*button.addEventListener('click', function () {
                 const div = this.closest('div');
                 fetch(`/dashboard/remove-watchlist`, {
                     method: 'POST',
@@ -203,7 +255,8 @@
                 .catch(e => {
                     console.error('Error: ', e.message);
                 });
-            });
+            });*/
+            removeWatchlistListener(button);
         });
     });
 </script>
