@@ -2,6 +2,7 @@ from datetime import datetime
 from uuid import uuid4
 
 from django.contrib.auth.base_user import AbstractBaseUser
+from django.contrib.auth.hashers import Argon2PasswordHasher
 from django.db import models
 from django.contrib.auth.models import BaseUserManager
 from django.conf import settings
@@ -35,6 +36,7 @@ class CustomUser(AbstractBaseUser):
     balance = models.FloatField(default=100000, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=False)
+    api_key = models.CharField(unique=True, null=True, blank=True)
 
     objects = CustomUserManager()
 
@@ -52,3 +54,9 @@ class EmailConfirmTokens(models.Model):
 
     def __str__(self):
         return f"user: {self.user}, token: {self.token}"
+
+
+class CustomArgon2PasswordHasher(Argon2PasswordHasher):
+    time_cost = 2
+    memory_cost = 102400
+    parallelism = 8

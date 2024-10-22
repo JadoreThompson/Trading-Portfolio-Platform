@@ -3,7 +3,17 @@
 
 {% block stylesheet %}
 <link rel="stylesheet" href="{% static 'css/accounts.css' %}">
+<style>
+    div a {
+        color: black;
+        text-decoration: none;
+    }
+    div a:hover {
+        text-decoration: underline;
+    }
+</style>
 {% endblock %}
+
 {% block title %}Login{% endblock %}
 
 
@@ -29,6 +39,9 @@
                         <input class="btn btn-primary" type="submit" value="Submit" style="width: 100%;">
                     </div>
                 </form>
+                <div class="col" style="text-align: center;">
+                    <a href="/accounts/register">Register</a>
+                </div>
                 {% for mesage in messages %}
                     <span>{{ message }}</span>
                 {% endfor %}

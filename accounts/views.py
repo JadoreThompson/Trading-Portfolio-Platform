@@ -1,6 +1,6 @@
 # Local
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from .forms import LoginForm, RegisterForm
 from .models import CustomUser, EmailConfirmTokens
@@ -73,11 +73,11 @@ class EmailConfirmationView(View):
     def post(self, request):
         try:
             data = {k: v for k, v in request.POST.dict().items() if k != 'csrfmiddlewaretoken'}
+            print(data)
             token_row = EmailConfirmTokens.objects.get(token=data['token'])
 
-            if not token_row:
-                return JsonResponse(status=404, data={'error': 'Incorrect Token'})
-            if (int(datetime.now().timestamp()) - self._TOKEN_EXPIRY) > token_row.created_at:
+            print((int(datetime.now().timestamp()) - token_row.created_at))
+            if (int(datetime.now().timestamp()) - token_row.created_at) > self._TOKEN_EXPIRY:
                 return JsonResponse(status=409, data={'error': 'Token Expired'})
 
             user = token_row.user
