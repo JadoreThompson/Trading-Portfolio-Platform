@@ -101,7 +101,7 @@ def schedule_weekly_pdf(user):
     schedule, _ = CrontabSchedule.objects.get_or_create(
         minute='30',
         hour='16',
-        day_of_week='*',
+        day_of_week='5',
         day_of_month='*',
         month_of_year='*',
     )
