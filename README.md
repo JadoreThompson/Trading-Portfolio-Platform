@@ -65,4 +65,4 @@ celery -A toolbox beat -l INFO --scheduler django_celery_beat.schedulers.Databas
 
 ## **Contact**
 
-If you’re interested in collaborating or have any opportunities, feel free to contact me at [jadorethompson6@gmail.com](mailto:jadorethompson6@gmail.com) or connect with me on [LinkedIn](https://www.linkedin.com/in/jadore-t-49379a295/).
+If you’re interested in collaborating or have any opportunities, feel free to contact me at [jadorethompson6@gmail.com](mailto:jadorethompson6@gmail.com) or connect with me on [LinkedIn](https://www.linkedin.com/in/jadore-t-49379a295/).In the future I’m looking to build a list and phrases that indicate sentiment in an attempt to aid the model then combined with the CIMAWA model mentioned in the FBert paper. If you've cloned  the repo fell free to contact me too I'd like to communicate with people who find my work interesting
