@@ -101,9 +101,9 @@ document.addEventListener('DOMContentLoaded', function(){
             let span = Array.from(document.querySelectorAll('span')).find(span => span.textContent.trim() === wsMsg.order_id);
             const tr = span?.closest('tr');
 
-            openObject[wsMsg.order_id] = parseFloat(wsMsg.amount);
-            tr.querySelector('.upl').textContent = wsMsg.amount.toFixed(2);
-            calculateOpenSum();
+            openObject[wsMsg.order_id] = parseFloat(wsMsg.amount).toFixed(2);
+            tr.querySelector('.upl').textContent = openObject[wsMsg.order_id];
+            calculateUnrealisedGain();
         }
     };
 
@@ -121,10 +121,10 @@ document.addEventListener('DOMContentLoaded', function(){
     // -------------------------------------------
 
     // Calculate the sum of unrealised gain
-    function calculateOpenSum() {
-        let sum = Object.values(openObject).reduce((sum, value) => sum + value, 0).toFixed(2);
+    function calculateUnrealisedGain() {
+        let sum = Object.values(openObject).reduce((sum, value) => sum + Number(value), 0).toFixed(2);
+        console.log(sum)
         let ugElement = document.querySelector('.ug').querySelector('span');
-        sum = Object.values(openObject).reduce((sum, value) => sum + value, 0).toFixed(2);
         let str = '';
         if (sum < 0) {
             ugElement.style.color = '#D60A22';
@@ -135,7 +135,7 @@ document.addEventListener('DOMContentLoaded', function(){
         }
         ugElement.textContent = str;
     }
-    calculateOpenSum();
+    calculateUnrealisedGain();
 
     // Color changes for top row stats
     function assignColor(targetStat, color=true) {

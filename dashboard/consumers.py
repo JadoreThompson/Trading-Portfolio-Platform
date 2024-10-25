@@ -57,12 +57,12 @@ class OrderConsumer(AsyncWebsocketConsumer):
         requests, and sends relevant confirmations back to the client.
         """
         data = json.loads(text_data)
-        if 'dollar_amount' in data:
+        if not isinstance(data.get('dollar_amount', None), str):
             data['dollar_amount'] = float(data['dollar_amount'])
 
-        if data['action'] == 'open':
+        if data.get('action', None) == 'open':
             await self.create_order(data)
-        if data['action'] == 'close':
+        if data.get('action', None) == 'close':
             order = await self.close_user_position(data)
             # await self.send(json.dumps({'type': 'close_order_confirmation'}.update(vars(order))))
 

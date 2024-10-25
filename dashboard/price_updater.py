@@ -60,7 +60,7 @@ async def close(order, close_price, amount):
     :param amount: The amount of realized PnL to apply to the user.
     """
     def func(order, close_price: int | float, amount: int | float):
-        if order.is_active and not order.closed_at:
+        if order.is_active and not order.closed_at and not isinstance(amount, str):
             user = Users.objects.get(email=order.user_id)
             user.balance += (order.dollar_amount + amount)
             user.save()
@@ -68,7 +68,7 @@ async def close(order, close_price, amount):
             order.is_active = not order.is_active
             order.close_price = close_price
             order.closed_at = datetime.now()
-            order.realised_pnl = float("{:.2f}".format(order.dollar_amount - (order.dollar_amount - amount)))
+            order.realised_pnl = round(order.dollar_amount - (order.dollar_amount - amount), 2)
             order.unrealised_pnl = 0.0
             order.save()
             return user.balance
@@ -101,7 +101,7 @@ def fetch_price(order=None, tick=None):
             if stored_price:
                 if price == float(stored_price.decode()):
                     return None
-            redis_client.set(ticker, price)
+            redis_client.set(ticker, round(price, 2))
             return price
     except Exception as e:
         return None
